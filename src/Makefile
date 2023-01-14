@@ -10,14 +10,14 @@ kompilator: lexer.o parser.o main.o logic.o
 %.o: %.cpp
 	$(CXX) $(FLAGS) -c $^
 
-lexer.cc: lexer.l parser.hh
+lexer.cpp: lexer.l parser.hh
 	flex -o $@ $<
 
-parser.cc parser.hh: parser.y
-	bison -Wall -d -o parser.cc $^
+parser.cpp parser.hh: parser.y
+	bison -Wall -d -o parser.cpp $^
 
 clean:
-	rm -f *.o parser.cc parser.hh lexer.cc kompilator
+	rm -f *.o parser.cpp parser.hpp lexer.cpp kompilator
 
 cleanall: clean
 	rm -f maszyna-wirtualna maszyna-wirtualna-cln

@@ -2,7 +2,6 @@
  *  Lexer kompilatora "głupiego", JFTT 2022
  *
  *  Autor: Maciek Józefkowicz
- *  10.01.2023
  *
 */
 
@@ -11,43 +10,47 @@
 %option nounput
 
 %{
-#include "parser.hh"
-int yylex();
+#include "parser.hpp"
 %}
 
 %%
-
 \[.*\]          ;
 [ \t\n]         ;
+[_a-z]+         { yylval.str_val = yytext; return IDENTIFIER; }
+[0-9]+          { yylval.l_val = atoll( yytext ); return NUM; }
 
-PROCEDURE       { return PROCEDURE; }
-IS              { return  IS;}
-VAR             { return  VAR;}
-BEGIN           { return  BEGIN;}
-END             { return  END;}
-PROGRAM         { return  PROGRAM;}
-IF              { return  IF;}
-THEN            { return  THEN;}
-ELSE            { return  ELSE;}
-ENDIF           { return  ENDIF;}
-WHILE           { return  WHILE;}
-REPEAT          { return  REPEAT;}
-DO              { return  DO;}
-ENDWHILE        { return  ENDWHILE;}
-READ            { return  READ;}
-WRITE           { return  WRITE;}
-UNTIL           { return  UNTIL;}
-"<="            { return  lteq;}
-">="            { return  gteq;}
-"<"             { return  lt;}
-">"             { return  gt;}
-"!="            { return  uneq;}
-":="            { return  set;}
-;               { return yytext[0];}
-,               { return yytext[0];}
+PROCEDURE       { return KW_PROCEDURE; }
+IS              { return  KW_IS;}
+VAR             { return  KW_VAR;}
+BEGIN           { return  KW_BEGIN;}
+END             { return  KW_END;}
+PROGRAM         { return  KW_PROGRAM;}
+IF              { return  KW_IF;}
+THEN            { return  KW_THEN;}
+ELSE            { return  KW_ELSE;}
+ENDIF           { return  KW_ENDIF;}
+WHILE           { return  KW_WHILE;}
+REPEAT          { return  KW_REPEAT;}
+DO              { return  KW_DO;}
+ENDWHILE        { return  KW_ENDWHILE;}
+READ            { return  KW_READ;}
+WRITE           { return  KW_WRITE;}
+UNTIL           { return  KW_UNTIL;}
+"+"             { return PLUS;  }
+"-"             { return MINUS; }
+"*"             { return TIMES; }
+"/"             { return DIV;   }
+"%"             { return MOD;   }
+"<="            { return  LTEQ;}
+">="            { return  GTEQ;}
+"<"             { return  LT;}
+">"             { return  GT;}
+"!="            { return  UNEQ;}
+":="            { return  SET;}
+;               { return SEMI;}
+,               { return COMMA;}
 
-[_a-z]+         { return identifier; }
-[0-9]+          { yylval = atoll( yytext );  return num; }
-.               { yyerror("illegal word");}
+EOF             { return KW_EOF; }
+.               {}
 
 %%

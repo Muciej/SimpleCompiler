@@ -2,14 +2,12 @@
  * Parser kompilatora "głupiego", JFTT2022
  *
  * Autor: Maciek Józefkowicz
- * 10.01.2023
 */
 
 %{
 
-%define api.value.type {long long}
-
 #include <iostream>
+
 #include "logic.cpp"
 using namespace std;
 
@@ -20,47 +18,63 @@ void yyerror(char const* s);
 
 %}
 
-%token NUM
+%union {
+  long long l_val;
+  char const* str_val;
+}
+
 %token IDENTIFIER
-%token PROCEDURE
-%token IS
-%token VAR
-%token BEGIN
-%token END
-%token PROGRAM
-%token IF
-%token THEN
-%token ELSE
-%token ENDIF
-%token WHILE
-%token REPEAT
-%token DO
-%token ENDWHILE
-%token READ
-%token WRITE
-%token UNTIL
+%token NUM
+%token KW_PROGRAM
+%token KW_PROCEDURE
+%token KW_IS
+%token KW_BEGIN
+%token KW_VAR
+%token KW_END
+%token KW_IF
+%token KW_THEN
+%token KW_ELSE
+%token KW_ENDIF
+%token KW_WHILE
+%token KW_DO
+%token KW_ENDWHILE
+%token KW_REPEAT
+%token KW_READ
+%token KW_WRITE
+%token KW_UNTIL
+%token KW_EOF
+%token EQ	// =
 %token LTEQ	// <=
 %token GTEQ	// >=
 %token LT	// <
 %token GT	// >
 %token UNEQ	// !=
 %token SET 	// :=
+%token SEMI 	// ;
+%token PLUS	// +
+%token MINUS	// -
+%token TIMES	// *
+%token MOD	// %
+%token DIV	// /
+%token COMMA	// ,
+%token L_PAR	// (
+%token R_PAR	// )
 
 %%
 
 program_all:
-procedures main
+procedures main KW_EOF
 ;
 
 procedures:
 %empty
-| procedures PROCEDURE proc_head IS VAR declarations BEGIN commands END
-| procedures PROCEDURE proc_head IS BEGIN commands END
+| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END
+| procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END
 ;
 
 main:
-PROGRAM IS VAR declarations BEGIN commands END
-| PROGRAM IS BEGIN commands END
+KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END
+| KW_PROGRAM KW_IS KW_BEGIN commands KW_END
 ;
 
 commands:
@@ -69,45 +83,47 @@ commands command
 ;
 
 command:
-identifier set expression ';'
-| IF condition THEN commands ELSE commands ENDIF
-| IF condition THEN commands ENDIF
-| WHILE condition DO commands ENDWHILE
-| REPEAT commands UNTIL condition ';'
-| proc_head ';'
-| READ identifier ';'
-| WRITE value ';'
+IDENTIFIER SET expression SEMI
+| KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF
+| KW_IF condition KW_THEN commands KW_ENDIF
+| KW_WHILE condition KW_DO commands KW_ENDWHILE
+| KW_REPEAT commands KW_UNTIL condition SEMI
+| proc_head SEMI
+| KW_READ IDENTIFIER SEMI
+| KW_WRITE value SEMI
 ;
 
 proc_head:
-identifier '(' declarations ')'
+IDENTIFIER L_PAR declarations R_PAR
 ;
 
 declarations:
-declarations ',' identifier
-| identifier
+declarations COMMA IDENTIFIER
+| IDENTIFIER
+;
 
 expression:
 value
-| value '+' value
-| value '-' value
-| value '*' value
-| value '/' value
-| value '%' value
+| value PLUS value
+| value MINUS value
+| value TIMES value
+| value DIV value
+| value MOD value
 ;
 
 condition:
-value '=' value
-| value uneq value
-| value gt value
-| value lt value
-| value gteq value
-| value lteq value
+value EQ value
+| value UNEQ value
+| value GT value
+| value LT value
+| value GTEQ value
+| value LTEQ value
 ;
 
 value:
-num
-| identifier
+NUM
+| IDENTIFIER
+;
 
 %%
 

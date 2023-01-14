@@ -17,7 +17,7 @@ parser.cc parser.hh: parser.y
 	bison -Wall -d -o parser.cc $^
 
 clean:
-	rm -f *.o parser.cc parser.hh lexer.cc
+	rm -f *.o parser.cc parser.hh lexer.cc kompilator
 
 cleanall: clean
 	rm -f maszyna-wirtualna maszyna-wirtualna-cln

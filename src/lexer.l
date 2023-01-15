@@ -24,9 +24,9 @@ using std::endl;
 <comment>.*     ;
 <comment>\n     ;
 [ \t\n]         {}
-[_a-z]+         { yylval.str_val = yytext;
+[_a-z]+         { yylval = yytext;
                   return IDENTIFIER; }
-[0-9]+          { yylval.l_val = atoll( yytext );
+[0-9]+          { yylval = yytext;
                   return NUM; }
 
 PROCEDURE       { return KW_PROCEDURE;  }

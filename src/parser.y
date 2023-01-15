@@ -13,6 +13,7 @@ using namespace std;
 
 extern int yylineno;
 ofstream debugstream;
+ofstream outFile;
 int debug = 0;
 int yylex( void );
 void yyset_in( FILE* in_str);
@@ -20,10 +21,8 @@ void yyerror(char const* s);
 
 %}
 
-%union {
-  long long l_val;
-  char const* str_val;
-}
+%define api.value.type{std::string}
+
 %token IDENTIFIER
 %token NUM
 %token KW_PROGRAM
@@ -81,37 +80,44 @@ KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugst
 
 commands:
 commands command	{if(debug) debugstream<< yylineno<< " Commands list"<<endl;}
-| command	{if(debug) debugstream<< yylineno<< " Command"<<endl;}
+| command	{
+			if(debug) debugstream<< yylineno<< " Command"<<endl;
+
+		}
 ;
 
 command:
-IDENTIFIER SET expression SEMI		{if(debug) debugstream<<yylineno<<" Ident: " << $<str_val>1 << " set exp "<<endl;}
+IDENTIFIER SET expression SEMI		{if(debug) debugstream<<yylineno<<" Ident: " << $1 << " set exp "<<endl;}
 | KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF {if(debug) debugstream<<yylineno<<" If then else"<<endl;}
 | KW_IF condition KW_THEN commands KW_ENDIF	{if(debug) debugstream<<yylineno<<" If then"<<endl;}
 | KW_WHILE condition KW_DO commands KW_ENDWHILE	{ if(debug) debugstream<<yylineno<<" While loop"<<endl;}
 | KW_REPEAT commands KW_UNTIL condition SEMI	{ if(debug) debugstream<<yylineno<<" Unitl loop"<<endl;}
 | proc_head SEMI			{if(debug) debugstream << yylineno<< " proc_head"<<endl; }
-| KW_READ IDENTIFIER SEMI		{if(debug) debugstream << yylineno<< " Read ident: " << $<str_val>2 << endl;}
+| KW_READ IDENTIFIER SEMI		{if(debug) debugstream << yylineno<< " Read ident: " << $2 << endl;}
 | KW_WRITE value SEMI			{if(debug) debugstream << yylineno<< " Write val"<<endl; }
 ;
 
 proc_head:
-IDENTIFIER L_PAR declarations R_PAR	{	if(debug) debugstream << yylineno<<  " ident: " << $<str_val>1 << " with declarations"<< endl;
+IDENTIFIER L_PAR declarations R_PAR	{	if(debug) debugstream << yylineno<<  " ident: " << $1 << " with declarations"<< endl;
 
 					}
 ;
 
 declarations:
-declarations COMMA IDENTIFIER		{	if(debug) debugstream << yylineno<< " , Ident: "<< $<str_val>3 << endl;}
-| IDENTIFIER				{	if(debug) debugstream <<  yylineno<< " Ident: " << $<str_val>1 << endl;
+declarations COMMA IDENTIFIER		{	if(debug) debugstream << yylineno<< " , Ident: "<< $3 << endl;}
+| IDENTIFIER				{	if(debug) debugstream <<  yylineno<< " Ident: " << $1 << endl;
 
 					}
 ;
 
 expression:
-value					{if(debug) debugstream<< yylineno<< " Value"<<endl;}
-| value PLUS value			{if(debug) debugstream<< yylineno<< " Value + Value"<<endl;}
-| value MINUS value			{if(debug) debugstream<< yylineno<< " Value - Value"<<endl;}
+value					{if(debug) debugstream<< yylineno<< " Value "<< $1 <<endl;}
+| value PLUS value			{
+						if(debug) debugstream<< yylineno<< " Value + Value"<<endl;
+					}
+| value MINUS value			{
+						if(debug) debugstream<< yylineno<< " Value - Value"<<endl;
+					}
 | value TIMES value			{if(debug) debugstream<< yylineno<< " Value * Value"<<endl;}
 | value DIV value			{if(debug) debugstream<< yylineno<< " Value / Value "<<endl;}
 | value MOD value			{if(debug) debugstream<< yylineno<< " Value % Value "<<endl;}
@@ -127,8 +133,8 @@ value EQ value				{if(debug) debugstream<< yylineno<< " Value = Value"<<endl;}
 ;
 
 value:
-NUM					{if(debug) debugstream<< yylineno<< " Number: "<< $<l_val>1 <<endl;}
-| IDENTIFIER				{if(debug) debugstream<< yylineno<< " Ident: "<<$<str_val>1 <<endl;}
+NUM					{if(debug) debugstream<< yylineno<< " Number: "<< $1 <<endl;}
+| IDENTIFIER				{if(debug) debugstream<< yylineno<< " Ident: "<<$1 <<endl;}
 ;
 
 %%
@@ -140,6 +146,7 @@ void yyerror(char const *s){
 void run(FILE* data, ofstream& out, ofstream& debugst){
   cout << "Kompilacja" << endl;
   yyset_in(data);
+  outFile = std::move(out);
   if(debugst.good()){
   	cout<<"Debug mode"<<endl;
   	debug = 1;

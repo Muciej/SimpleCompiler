@@ -24,131 +24,131 @@
 6 , Ident: x
 6 , Ident: y
 6 , Ident: z
-8 Read ident: a;
+8 Read ident: a
 8 Command
 9 Ident: a
-9 Value
-9 Ident: b := a; set exp 
+9 Value a
+9 Ident: b set exp 
 9 Commands list
 10 Ident: b
 10 Ident: a
 10 Value + Value
-10 Ident: c := b + a; set exp 
+10 Ident: c set exp 
 10 Commands list
 11 Ident: c
 11 Ident: b
 11 Value + Value
-11 Ident: d := c + b; set exp 
+11 Ident: d set exp 
 11 Commands list
 12 Ident: d
 12 Ident: c
 12 Value + Value
-12 Ident: e := d + c; set exp 
+12 Ident: e set exp 
 12 Commands list
 13 Ident: e
 13 Ident: d
 13 Value + Value
-13 Ident: f := e + d; set exp 
+13 Ident: f set exp 
 13 Commands list
 14 Ident: f
 14 Ident: e
 14 Value + Value
-14 Ident: g := f + e; set exp 
+14 Ident: g set exp 
 14 Commands list
 15 Ident: g
 15 Ident: f
 15 Value + Value
-15 Ident: h := g + f; set exp 
+15 Ident: h set exp 
 15 Commands list
 16 Ident: h
 16 Ident: g
 16 Value + Value
-16 Ident: i := h + g; set exp 
+16 Ident: i set exp 
 16 Commands list
 17 Ident: i
 17 Ident: h
 17 Value + Value
-17 Ident: j := i + h; set exp 
+17 Ident: j set exp 
 17 Commands list
 18 Ident: j
 18 Ident: i
 18 Value + Value
-18 Ident: k := j + i; set exp 
+18 Ident: k set exp 
 18 Commands list
 19 Ident: k
 19 Ident: j
 19 Value + Value
-19 Ident: l := k + j; set exp 
+19 Ident: l set exp 
 19 Commands list
 20 Ident: l
 20 Ident: k
 20 Value + Value
-20 Ident: m := l + k; set exp 
+20 Ident: m set exp 
 20 Commands list
 21 Ident: m
 21 Ident: l
 21 Value + Value
-21 Ident: n := m + l; set exp 
+21 Ident: n set exp 
 21 Commands list
 22 Ident: n
 22 Ident: m
 22 Value + Value
-22 Ident: o := n + m; set exp 
+22 Ident: o set exp 
 22 Commands list
 23 Ident: o
 23 Ident: n
 23 Value + Value
-23 Ident: p := o + n; set exp 
+23 Ident: p set exp 
 23 Commands list
 24 Ident: p
 24 Ident: o
 24 Value + Value
-24 Ident: q := p + o; set exp 
+24 Ident: q set exp 
 24 Commands list
 25 Ident: q
 25 Ident: p
 25 Value + Value
-25 Ident: r := q + p; set exp 
+25 Ident: r set exp 
 25 Commands list
 26 Ident: r
 26 Ident: q
 26 Value + Value
-26 Ident: s := r + q; set exp 
+26 Ident: s set exp 
 26 Commands list
 27 Ident: s
 27 Ident: r
 27 Value + Value
-27 Ident: t := s + r; set exp 
+27 Ident: t set exp 
 27 Commands list
 28 Ident: t
 28 Ident: s
 28 Value + Value
-28 Ident: u := t + s; set exp 
+28 Ident: u set exp 
 28 Commands list
 29 Ident: u
 29 Ident: t
 29 Value + Value
-29 Ident: v := u + t; set exp 
+29 Ident: v set exp 
 29 Commands list
 30 Ident: v
 30 Ident: u
 30 Value + Value
-30 Ident: w := v + u; set exp 
+30 Ident: w set exp 
 30 Commands list
 31 Ident: w
 31 Ident: v
 31 Value + Value
-31 Ident: x := w + v; set exp 
+31 Ident: x set exp 
 31 Commands list
 32 Ident: x
 32 Ident: w
 32 Value + Value
-32 Ident: y := x + w; set exp 
+32 Ident: y set exp 
 32 Commands list
 33 Ident: y
 33 Ident: x
 33 Value + Value
-33 Ident: z := y + x; set exp 
+33 Ident: z set exp 
 33 Commands list
 34 Ident: z
 34 Write val

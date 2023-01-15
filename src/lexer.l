@@ -13,6 +13,8 @@
 #include <iostream>
 #include "parser.hpp"
 void yyerror(char const* s);
+using std::cout;
+using std::endl;
 %}
 
 %x comment
@@ -22,7 +24,6 @@ void yyerror(char const* s);
 <comment>\]     { BEGIN(INITIAL);}
 <comment>.*     {}
 <comment>\n     {}
-
 [ \t\n]         {}
 [_a-z]+         { yylval.str_val = yytext;
                   return IDENTIFIER; }
@@ -51,16 +52,17 @@ UNTIL           { return  KW_UNTIL;}
 "*"             { return TIMES; }
 "/"             { return DIV;   }
 "%"             { return MOD;   }
-"<="            { return  LTEQ;}
-">="            { return  GTEQ;}
-"<"             { return  LT;}
-">"             { return  GT;}
-"!="            { return  UNEQ;}
-":="            { return  SET;}
-;               { return SEMI;}
-,               { return COMMA;}
+"<="            { return  LTEQ; }
+">="            { return  GTEQ; }
+"<"             { return  LT;   }
+">"             { return  GT;   }
+"!="            { return  UNEQ; }
+":="            { return  SET;  }
+;               { return SEMI;  }
+,               { return COMMA; }
 \(              { return L_PAR; }
 \)              { return R_PAR; }
+<<EOF>>         { cout<<"dupa"<<endl; return 0; }
 .               { yyerror("Prohibited word");}
 
 %%

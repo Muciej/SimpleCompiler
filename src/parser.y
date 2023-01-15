@@ -66,7 +66,7 @@ void yyerror(char const* s);
 %%
 
 program_all:
-procedures main
+procedures main		{ if(debug) debugstream << "program_all" << endl; }
 ;
 
 procedures:
@@ -92,17 +92,17 @@ IDENTIFIER SET expression SEMI
 | KW_WHILE condition KW_DO commands KW_ENDWHILE
 | KW_REPEAT commands KW_UNTIL condition SEMI
 | proc_head SEMI
-| KW_READ IDENTIFIER SEMI		{debugstream << $<str_val>2 << endl;}
+| KW_READ IDENTIFIER SEMI		{if(debug) debugstream << $<str_val>2 << endl;}
 | KW_WRITE value SEMI
 ;
 
 proc_head:
-IDENTIFIER L_PAR declarations R_PAR	{debugstream << $<str_val>1 << endl;}
+IDENTIFIER L_PAR declarations R_PAR	{if(debug) debugstream << $<str_val>1 << endl;}
 ;
 
 declarations:
-declarations COMMA IDENTIFIER		{debugstream << $<str_val>3 << endl;}
-| IDENTIFIER				{debugstream << $<str_val>1 << endl;}
+declarations COMMA IDENTIFIER		{if(debug) debugstream << $<str_val>3 << endl;}
+| IDENTIFIER				{if(debug) debugstream << $<str_val>1 << endl;}
 ;
 
 expression:

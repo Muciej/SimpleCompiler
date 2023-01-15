@@ -10,29 +10,39 @@
 %option nounput
 
 %{
+#include <iostream>
 #include "parser.hpp"
+void yyerror(char const* s);
 %}
 
-%%
-\[.*\]          ;
-[ \t\n]         ;
-[_a-z]+         { yylval.str_val = yytext; return IDENTIFIER; }
-[0-9]+          { yylval.l_val = atoll( yytext ); return NUM; }
+%x comment
 
-PROCEDURE       { return KW_PROCEDURE; }
+%%
+\[              { BEGIN(comment);}
+<comment>\]     { BEGIN(INITIAL);}
+<comment>.*     {}
+<comment>\n     {}
+
+[ \t\n]         {}
+[_a-z]+         { yylval.str_val = yytext;
+                  return IDENTIFIER; }
+[0-9]+          { yylval.l_val = atoll( yytext );
+                  return NUM; }
+
+PROCEDURE       { return KW_PROCEDURE;}
 IS              { return  KW_IS;}
 VAR             { return  KW_VAR;}
 BEGIN           { return  KW_BEGIN;}
+ENDWHILE        { return  KW_ENDWHILE;}
+ENDIF           { return  KW_ENDIF;}
 END             { return  KW_END;}
 PROGRAM         { return  KW_PROGRAM;}
 IF              { return  KW_IF;}
 THEN            { return  KW_THEN;}
 ELSE            { return  KW_ELSE;}
-ENDIF           { return  KW_ENDIF;}
 WHILE           { return  KW_WHILE;}
 REPEAT          { return  KW_REPEAT;}
 DO              { return  KW_DO;}
-ENDWHILE        { return  KW_ENDWHILE;}
 READ            { return  KW_READ;}
 WRITE           { return  KW_WRITE;}
 UNTIL           { return  KW_UNTIL;}
@@ -49,8 +59,8 @@ UNTIL           { return  KW_UNTIL;}
 ":="            { return  SET;}
 ;               { return SEMI;}
 ,               { return COMMA;}
-
-EOF             { return KW_EOF; }
-.               {}
+\(              { return L_PAR; }
+\)              { return R_PAR; }
+.               { yyerror("Prohibited word");}
 
 %%

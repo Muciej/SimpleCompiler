@@ -7,11 +7,15 @@
 %{
 
 #include <iostream>
-
+#include <fstream>
 #include "logic.cpp"
+
 using namespace std;
 
 extern int yylineno;
+ofstream outstream;
+ofstream debugstream;
+int debug = 0;
 int yylex( void );
 void yyset_in( FILE* in_str);
 void yyerror(char const* s);
@@ -42,7 +46,6 @@ void yyerror(char const* s);
 %token KW_READ
 %token KW_WRITE
 %token KW_UNTIL
-%token KW_EOF
 %token EQ	// =
 %token LTEQ	// <=
 %token GTEQ	// >=
@@ -63,7 +66,7 @@ void yyerror(char const* s);
 %%
 
 program_all:
-procedures main KW_EOF
+procedures main
 ;
 
 procedures:
@@ -89,17 +92,17 @@ IDENTIFIER SET expression SEMI
 | KW_WHILE condition KW_DO commands KW_ENDWHILE
 | KW_REPEAT commands KW_UNTIL condition SEMI
 | proc_head SEMI
-| KW_READ IDENTIFIER SEMI
+| KW_READ IDENTIFIER SEMI		{debugstream << $<str_val>2 << endl;}
 | KW_WRITE value SEMI
 ;
 
 proc_head:
-IDENTIFIER L_PAR declarations R_PAR
+IDENTIFIER L_PAR declarations R_PAR	{debugstream << $<str_val>1 << endl;}
 ;
 
 declarations:
-declarations COMMA IDENTIFIER
-| IDENTIFIER
+declarations COMMA IDENTIFIER		{debugstream << $<str_val>3 << endl;}
+| IDENTIFIER				{debugstream << $<str_val>1 << endl;}
 ;
 
 expression:
@@ -128,11 +131,17 @@ NUM
 %%
 
 void yyerror(char const *s){
-  cerr<< s << "in line " << yylineno << endl;
+  cerr<< s << " in line " << yylineno << endl;
 }
 
-void run(FILE* data, FILE* out){
+void run(FILE* data, ofstream& out, ofstream& debugst){
   cout << "Kompilacja" << endl;
   yyset_in(data);
+  outstream = std::move(out);
+  if(debugst.good()){
+  	debug = 1;
+  	debugstream = std::move(debugst);
+  }
   yyparse();
+  out.close();
 }

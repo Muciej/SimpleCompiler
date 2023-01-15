@@ -21,31 +21,32 @@ using std::endl;
 %%
 \[              { BEGIN(comment);}
 <comment>\]     { BEGIN(INITIAL);}
-<comment>.*     {}
-<comment>\n     {}
+<comment>.*     ;
+<comment>\n     ;
 [ \t\n]         {}
 [_a-z]+         { yylval.str_val = yytext;
                   return IDENTIFIER; }
 [0-9]+          { yylval.l_val = atoll( yytext );
                   return NUM; }
 
-PROCEDURE       { return KW_PROCEDURE;}
-IS              { return  KW_IS;}
-VAR             { return  KW_VAR;}
-BEGIN           { return  KW_BEGIN;}
-ENDWHILE        { return  KW_ENDWHILE;}
-ENDIF           { return  KW_ENDIF;}
-END             { return  KW_END;}
-PROGRAM         { return  KW_PROGRAM;}
-IF              { return  KW_IF;}
-THEN            { return  KW_THEN;}
-ELSE            { return  KW_ELSE;}
-WHILE           { return  KW_WHILE;}
-REPEAT          { return  KW_REPEAT;}
-DO              { return  KW_DO;}
-READ            { return  KW_READ;}
-WRITE           { return  KW_WRITE;}
-UNTIL           { return  KW_UNTIL;}
+PROCEDURE       { return KW_PROCEDURE;  }
+IS              { return  KW_IS;        }
+VAR             { return  KW_VAR;       }
+BEGIN           { return  KW_BEGIN;     }
+ENDWHILE        { return  KW_ENDWHILE;  }
+ENDIF           { return  KW_ENDIF;     }
+END             { return  KW_END;       }
+PROGRAM         { return  KW_PROGRAM;   }
+IF              { return  KW_IF;        }
+THEN            { return  KW_THEN;      }
+ELSE            { return  KW_ELSE;      }
+WHILE           { return  KW_WHILE;     }
+REPEAT          { return  KW_REPEAT;    }
+DO              { return  KW_DO;        }
+READ            { return  KW_READ;      }
+WRITE           { return  KW_WRITE;     }
+UNTIL           { return  KW_UNTIL;     }
+"="             { return EQ;    }
 "+"             { return PLUS;  }
 "-"             { return MINUS; }
 "*"             { return TIMES; }
@@ -61,7 +62,5 @@ UNTIL           { return  KW_UNTIL;}
 ,               { return COMMA; }
 \(              { return L_PAR; }
 \)              { return R_PAR; }
-<<EOF>>         { return 0; }
-.               { yyerror("Prohibited word");}
 
 %%

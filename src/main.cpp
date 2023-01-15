@@ -29,7 +29,6 @@ int main(int argc, char const* argv[]) {
     if(argc == 4 && !debug.good()){
         cerr<<"Błąd: nie można otworzyć pliku debug " << argv[3] << endl;
     }
-
     run(data, out, debug);
 
     return 0;

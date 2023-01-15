@@ -12,7 +12,6 @@
 using namespace std;
 
 extern int yylineno;
-ofstream outstream;
 ofstream debugstream;
 int debug = 0;
 int yylex( void );
@@ -25,7 +24,6 @@ void yyerror(char const* s);
   long long l_val;
   char const* str_val;
 }
-
 %token IDENTIFIER
 %token NUM
 %token KW_PROGRAM
@@ -65,66 +63,72 @@ void yyerror(char const* s);
 %%
 
 program_all:
-procedures main
+procedures main		{	if(debug) debugstream<<  yylineno<< " procedures main"<<endl;
+
+			}
 ;
 
 procedures:
 %empty
-| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END
-| procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END
+| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure with vars"<<endl;}
+| procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure without vars"<<endl;}
 ;
 
 main:
-KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END
-| KW_PROGRAM KW_IS KW_BEGIN commands KW_END
+KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Main with vars"<<endl;}
+| KW_PROGRAM KW_IS KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Main without vars"<<endl;}
 ;
 
 commands:
-commands command
-| command
+commands command	{if(debug) debugstream<< yylineno<< " Commands list"<<endl;}
+| command	{if(debug) debugstream<< yylineno<< " Command"<<endl;}
 ;
 
 command:
-IDENTIFIER SET expression SEMI
-| KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF
-| KW_IF condition KW_THEN commands KW_ENDIF
-| KW_WHILE condition KW_DO commands KW_ENDWHILE
-| KW_REPEAT commands KW_UNTIL condition SEMI
-| proc_head SEMI
-| KW_READ IDENTIFIER SEMI		{if(debug) debugstream << $<str_val>2 << endl;}
-| KW_WRITE value SEMI
+IDENTIFIER SET expression SEMI		{if(debug) debugstream<<yylineno<<" Ident: " << $<str_val>1 << " set exp "<<endl;}
+| KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF {if(debug) debugstream<<yylineno<<" If then else"<<endl;}
+| KW_IF condition KW_THEN commands KW_ENDIF	{if(debug) debugstream<<yylineno<<" If then"<<endl;}
+| KW_WHILE condition KW_DO commands KW_ENDWHILE	{ if(debug) debugstream<<yylineno<<" While loop"<<endl;}
+| KW_REPEAT commands KW_UNTIL condition SEMI	{ if(debug) debugstream<<yylineno<<" Unitl loop"<<endl;}
+| proc_head SEMI			{if(debug) debugstream << yylineno<< " proc_head"<<endl; }
+| KW_READ IDENTIFIER SEMI		{if(debug) debugstream << yylineno<< " Read ident: " << $<str_val>2 << endl;}
+| KW_WRITE value SEMI			{if(debug) debugstream << yylineno<< " Write val"<<endl; }
 ;
 
 proc_head:
-IDENTIFIER L_PAR declarations R_PAR	{if(debug) debugstream << $<str_val>1 << endl;}
+IDENTIFIER L_PAR declarations R_PAR	{	if(debug) debugstream << yylineno<<  " ident: " << $<str_val>1 << " with declarations"<< endl;
+
+					}
 ;
 
 declarations:
-declarations COMMA IDENTIFIER		{if(debug) debugstream << $<str_val>3 << endl;}
-| IDENTIFIER				{if(debug) debugstream << $<str_val>1 << endl;}
+declarations COMMA IDENTIFIER		{	if(debug) debugstream << yylineno<< " , Ident: "<< $<str_val>3 << endl;}
+| IDENTIFIER				{	if(debug) debugstream <<  yylineno<< " Ident: " << $<str_val>1 << endl;
+
+					}
 ;
 
 expression:
-value
-| value PLUS value
-| value MINUS value
-| value TIMES value
-| value DIV value
-| value MOD value
+value					{if(debug) debugstream<< yylineno<< " Value"<<endl;}
+| value PLUS value			{if(debug) debugstream<< yylineno<< " Value + Value"<<endl;}
+| value MINUS value			{if(debug) debugstream<< yylineno<< " Value - Value"<<endl;}
+| value TIMES value			{if(debug) debugstream<< yylineno<< " Value * Value"<<endl;}
+| value DIV value			{if(debug) debugstream<< yylineno<< " Value / Value "<<endl;}
+| value MOD value			{if(debug) debugstream<< yylineno<< " Value % Value "<<endl;}
 ;
 
 condition:
-value EQ value
-| value UNEQ value
-| value GT value
-| value LT value
-| value GTEQ value
-| value LTEQ value
+value EQ value				{if(debug) debugstream<< yylineno<< " Value = Value"<<endl;}
+| value UNEQ value			{if(debug) debugstream<< yylineno<< " Value != Value"<<endl;}
+| value GT value			{if(debug) debugstream<< yylineno<< " Value > Value"<<endl;}
+| value LT value			{if(debug) debugstream<< yylineno<< " Value < Value"<<endl;}
+| value GTEQ value			{if(debug) debugstream<< yylineno<< " Value >= Value"<<endl;}
+| value LTEQ value			{if(debug) debugstream<< yylineno<< " Value <= Value"<<endl;}
 ;
 
 value:
-NUM
-| IDENTIFIER
+NUM					{if(debug) debugstream<< yylineno<< " Number: "<< $<l_val>1 <<endl;}
+| IDENTIFIER				{if(debug) debugstream<< yylineno<< " Ident: "<<$<str_val>1 <<endl;}
 ;
 
 %%
@@ -136,7 +140,6 @@ void yyerror(char const *s){
 void run(FILE* data, ofstream& out, ofstream& debugst){
   cout << "Kompilacja" << endl;
   yyset_in(data);
-  outstream = std::move(out);
   if(debugst.good()){
   	cout<<"Debug mode"<<endl;
   	debug = 1;

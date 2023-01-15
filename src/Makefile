@@ -17,7 +17,7 @@ parser.cpp parser.hh: parser.y
 	bison -Wall -d -o parser.cpp $^
 
 clean:
-	rm -f *.o parser.cpp parser.hpp lexer.cpp kompilator
+	rm -f *.o parser.cpp parser.hpp lexer.cpp
 
 cleanall: clean
-	rm -f maszyna-wirtualna maszyna-wirtualna-cln
+	rm -f kompilator debugfile.txt *.geba

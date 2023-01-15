@@ -3,7 +3,6 @@
  *
  * Autor: Maciek Józefkowicz
 */
-
 %{
 
 #include <iostream>
@@ -66,7 +65,7 @@ void yyerror(char const* s);
 %%
 
 program_all:
-procedures main		{ if(debug) debugstream << "program_all" << endl; }
+procedures main
 ;
 
 procedures:
@@ -139,6 +138,7 @@ void run(FILE* data, ofstream& out, ofstream& debugst){
   yyset_in(data);
   outstream = std::move(out);
   if(debugst.good()){
+  	cout<<"Debug mode"<<endl;
   	debug = 1;
   	debugstream = std::move(debugst);
   }

@@ -4,7 +4,6 @@
  *  Autor: Maciek Józefkowicz
  *
 */
-
 %option noyywrap
 %option yylineno
 %option nounput
@@ -62,7 +61,7 @@ UNTIL           { return  KW_UNTIL;}
 ,               { return COMMA; }
 \(              { return L_PAR; }
 \)              { return R_PAR; }
-<<EOF>>         { cout<<"dupa"<<endl; return 0; }
+<<EOF>>         { return 0; }
 .               { yyerror("Prohibited word");}
 
 %%

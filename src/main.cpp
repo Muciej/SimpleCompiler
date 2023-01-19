@@ -10,7 +10,7 @@ int main(int argc, char const* argv[]) {
     ofstream out, debug;
 
     if(argc!=3 && argc!=4){
-        cerr << "Poprawne użycie: kompilator plik_wejściowy plik_wyjściowy"<<endl;
+        cerr << "Poprawne użycie: kompilator plik_wejściowy plik_wyjściowy (opcjonalnie plik debug)"<<endl;
         return -1;
     }
 

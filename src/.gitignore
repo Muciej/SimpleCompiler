@@ -1,8 +1,8 @@
 *.o
+*.geba
+*.txt
 parser.cpp
 parser.hpp
 lexer.cpp
 kompilator
-debugfile.txt
-output.geba
 

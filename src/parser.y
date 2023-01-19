@@ -11,6 +11,7 @@
 
 using namespace std;
 
+Logic logic;
 extern int yylineno;
 ofstream debugstream;
 ofstream outFile;
@@ -68,9 +69,9 @@ procedures main		{	if(debug) debugstream<<  yylineno<< " procedures main"<<endl;
 ;
 
 procedures:
-%empty
-| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure with vars"<<endl;}
+procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure with vars"<<endl;}
 | procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure without vars"<<endl;}
+| %empty
 ;
 
 main:
@@ -146,7 +147,8 @@ void yyerror(char const *s){
 void run(FILE* data, ofstream& out, ofstream& debugst){
   cout << "Kompilacja" << endl;
   yyset_in(data);
-  outFile = std::move(out);
+  //outFile = std::move(out);
+  logic.outFile = std::move(out);
   if(debugst.good()){
   	cout<<"Debug mode"<<endl;
   	debug = 1;

@@ -1,4 +1,5 @@
-dane/
+last_year_compilers/
+VM/
+example_programs/
 cmake-build-debug/
 .idea/
-

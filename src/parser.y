@@ -69,9 +69,9 @@ procedures main		{	if(debug) debugstream<<  yylineno<< " procedures main"<<endl;
 ;
 
 procedures:
-procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure with vars"<<endl;}
+  %empty
+| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure with vars"<<endl;}
 | procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure without vars"<<endl;}
-| %empty
 ;
 
 main:

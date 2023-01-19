@@ -5,4 +5,6 @@ parser.cpp
 parser.hpp
 lexer.cpp
 kompilator
+debug/
+
 

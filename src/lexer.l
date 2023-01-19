@@ -21,7 +21,7 @@ using std::endl;
 %%
 \[              { BEGIN(comment);}
 <comment>\]     { BEGIN(INITIAL);}
-<comment>.*     ;
+<comment>.      ;
 <comment>\n     ;
 [ \t\n]         {}
 [_a-z]+         { yylval = yytext;

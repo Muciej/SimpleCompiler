@@ -4,8 +4,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <stack>
-#include <utility>
 #include "classes.cpp"
 
 using std::string;
@@ -14,19 +12,22 @@ using std::endl;
 class Logic{
 public:
     std::ofstream outFile;
-    std::stack<string> identStack;
-    std::vector<Variable> declared;
+    std::ofstream debugFile;
+    bool debug = false;
 
-    void handleVarDeclaration(const string& ident){
-        Variable var{ident};
-        declared.push_back(var);
-        identStack.push(ident);
+    void close(){
+        outFile.close();
     }
 
-    void handleProcHead(const string& ident){
-        std::string head = ident;
-        while(!identStack.empty()){
-//            head identStack.pop();
-        }
+    void println_debug(const string& mess){
+        if(debug) debugFile << mess << endl;
+    }
+
+    void print_debug(const string& mess){
+        if(debug) debugFile << mess;
+    }
+
+    void print_debug(const int& num){
+        if(debug) debugFile << num;
     }
 };

@@ -63,79 +63,167 @@ void yyerror(char const* s);
 %%
 
 program_all:
-procedures main		{	if(debug) debugstream<<  yylineno<< " procedures main"<<endl;
-
+procedures main		{
+				logic.print_debug( yylineno );
+ 				logic.println_debug(" procedures main");
 			}
 ;
 
 procedures:
   %empty
-| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure with vars"<<endl;}
-| procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Procedure without vars"<<endl;}
+| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {
+											logic.print_debug(yylineno);
+											logic.println_debug(" Procedure with vars");
+										       }
+| procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END {
+									logic.print_debug(yylineno);
+									logic.println_debug(" Procedure without vars");
+
+								   }
 ;
 
 main:
-KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Main with vars"<<endl;}
-| KW_PROGRAM KW_IS KW_BEGIN commands KW_END {if(debug) debugstream<< yylineno<< " Main without vars"<<endl;}
+KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END {
+								logic.print_debug(yylineno);
+								logic.println_debug(" Main with vars");
+
+							      }
+| KW_PROGRAM KW_IS KW_BEGIN commands KW_END {
+						logic.print_debug(yylineno);
+						logic.println_debug( " Main without vars");
+				    	    }
 ;
 
 commands:
-commands command	{if(debug) debugstream<< yylineno<< " Commands list"<<endl;}
+commands command	{
+				logic.print_debug(yylineno);
+				logic.println_debug(" Commands list");
+			}
 | command	{
-			if(debug) debugstream<< yylineno<< " Command"<<endl;
+			logic.print_debug(yylineno);
+			logic.println_debug(" Command");
 
 		}
 ;
 
 command:
-IDENTIFIER SET expression SEMI		{if(debug) debugstream<<yylineno<<" Ident: " << $1 << " set exp "<<endl;}
-| KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF {if(debug) debugstream<<yylineno<<" If then else"<<endl;}
-| KW_IF condition KW_THEN commands KW_ENDIF	{if(debug) debugstream<<yylineno<<" If then"<<endl;}
-| KW_WHILE condition KW_DO commands KW_ENDWHILE	{ if(debug) debugstream<<yylineno<<" While loop"<<endl;}
-| KW_REPEAT commands KW_UNTIL condition SEMI	{ if(debug) debugstream<<yylineno<<" Unitl loop"<<endl;}
-| proc_head SEMI			{if(debug) debugstream << yylineno<< " proc_head"<<endl; }
-| KW_READ IDENTIFIER SEMI		{if(debug) debugstream << yylineno<< " Read ident: " << $2 << endl;}
-| KW_WRITE value SEMI			{if(debug) debugstream << yylineno<< " Write val"<<endl; }
+IDENTIFIER SET expression SEMI		{
+						logic.print_debug( yylineno );
+						logic.println_debug(" Ident: " + $1 + " set exp ");
+					}
+| KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF {
+								logic.print_debug(yylineno);
+								logic.println_debug(" If then else");
+							     }
+| KW_IF condition KW_THEN commands KW_ENDIF	{
+							logic.print_debug(yylineno);
+							logic.println_debug(" If then");
+						}
+| KW_WHILE condition KW_DO commands KW_ENDWHILE	{
+							logic.print_debug(yylineno);
+							logic.println_debug(" While loop");
+						}
+| KW_REPEAT commands KW_UNTIL condition SEMI	{
+							logic.print_debug(yylineno);
+							logic.println_debug(" Unitl loop");
+						}
+| proc_head SEMI			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" proc_head");
+					}
+| KW_READ IDENTIFIER SEMI		{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Read ident:" +  $2 );
+					}
+| KW_WRITE value SEMI			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Write val");
+					}
 ;
 
 proc_head:
-IDENTIFIER L_PAR declarations R_PAR	{	if(debug) debugstream << yylineno<<  " ident: " << $1 << " with declarations"<< endl;
+IDENTIFIER L_PAR declarations R_PAR	{
+						logic.print_debug( yylineno );
+  						logic.println_debug(" ident: " + $1 + " with declarations");
 
 					}
 ;
 
 declarations:
-declarations COMMA IDENTIFIER		{	if(debug) debugstream << yylineno<< " , Ident: "<< $3 << endl;}
-| IDENTIFIER				{	if(debug) debugstream <<  yylineno<< " Ident: " << $1 << endl;
+declarations COMMA IDENTIFIER		{
+						logic.print_debug( yylineno );
+						logic.println_debug(" , Ident: " + $3);
+					}
+| IDENTIFIER				{
+						logic.print_debug( yylineno );
+						logic.println_debug(" Ident: "  + $1);
 
 					}
 ;
 
 expression:
-value					{if(debug) debugstream<< yylineno<< " Value "<< $1 <<endl;}
+value					{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value " + $1);
+					}
 | value PLUS value			{
-						if(debug) debugstream<< yylineno<< " Value + Value"<<endl;
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value + Value");
 					}
 | value MINUS value			{
-						if(debug) debugstream<< yylineno<< " Value - Value"<<endl;
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value - Value");
 					}
-| value TIMES value			{if(debug) debugstream<< yylineno<< " Value * Value"<<endl;}
-| value DIV value			{if(debug) debugstream<< yylineno<< " Value / Value "<<endl;}
-| value MOD value			{if(debug) debugstream<< yylineno<< " Value % Value "<<endl;}
+| value TIMES value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value * Value");
+					}
+| value DIV value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value / Value ");
+					}
+| value MOD value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value % Value ");
+					}
 ;
 
 condition:
-value EQ value				{if(debug) debugstream<< yylineno<< " Value = Value"<<endl;}
-| value UNEQ value			{if(debug) debugstream<< yylineno<< " Value != Value"<<endl;}
-| value GT value			{if(debug) debugstream<< yylineno<< " Value > Value"<<endl;}
-| value LT value			{if(debug) debugstream<< yylineno<< " Value < Value"<<endl;}
-| value GTEQ value			{if(debug) debugstream<< yylineno<< " Value >= Value"<<endl;}
-| value LTEQ value			{if(debug) debugstream<< yylineno<< " Value <= Value"<<endl;}
+value EQ value				{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value = Value");
+					}
+| value UNEQ value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value != Value");
+					}
+| value GT value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value > Value");
+					}
+| value LT value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value < Value");
+					}
+| value GTEQ value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value >= Value");
+					}
+| value LTEQ value			{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Value <= Value");
+					}
 ;
 
 value:
-NUM					{if(debug) debugstream<< yylineno<< " Number: "<< $1 <<endl;}
-| IDENTIFIER				{if(debug) debugstream<< yylineno<< " Ident: "<<$1 <<endl;}
+NUM					{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Number: " + $1);
+					}
+| IDENTIFIER				{
+						logic.print_debug(yylineno);
+						logic.println_debug(" Ident: " + $1);
+					}
 ;
 
 %%
@@ -151,9 +239,9 @@ void run(FILE* data, ofstream& out, ofstream& debugst){
   logic.outFile = std::move(out);
   if(debugst.good()){
   	cout<<"Debug mode"<<endl;
-  	debug = 1;
-  	debugstream = std::move(debugst);
+  	logic.debug = true;
+  	logic.debugFile = std::move(debugst);
   }
   yyparse();
-  out.close();
+  logic.close();
 }

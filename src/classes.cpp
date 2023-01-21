@@ -2,45 +2,76 @@
 // Created by Maciek Józefkowicz on 15.01.2023.
 //
 #include <iostream>
-#include <utility>
 #include <vector>
-#include <string>
+
+using std::string;
+using std::cout;
+using std::endl;
+using std::vector;
 
 class Variable{
-public:
-    std::string identifier;
-    int rel_add_offset = -1;
-    int owner_id;
-    bool initialized = false;
-    Variable(std::string ident, int offset, int own_id) : identifier(std::move(ident)), rel_add_offset(offset), owner_id(own_id) {}
-    explicit Variable(std::string ident) : identifier(std::move(ident)) {
-        owner_id = 0;
-        rel_add_offset = -1;
-        initialized = false;
-    }
-
-    void setInit(bool state){
-        initialized = state;
-    }
+    bool is_const;
+    string identifier;
 };
 
-class Procedure{
-    int id = -1;
-    int varCount = 0;
-
+class Command{
+    virtual string debug_str() = 0;
+    //jakieś funkcje, które będą charakteryzować wszystkie komedny
+    // może np. to_assembly albo coś takiego?
 };
 
-class Instruction{
-    virtual void print(std::ofstream out) = 0;
+class Condition{
+    string logic_operator;
 };
 
-class While_loop : Instruction{
-    //condition
-    //instructions
+class Procedure : public Command{
+  string identifier;
+  Condition cond;
+  vector<Command> body;
+
+  string debug_str() override {
+
+  }
+};
+
+class While : public Command{
+    Condition cond;
+    vector<Command> body;
+};
+
+class Repeat : public Command{
+    Condition cond;
+    vector<Command> body;
+};
+
+class If_exp : public Command{
+    Condition cond;
+    vector<Command> body;
+};
+
+class If_else : public Command{
+    Condition cond;
+    vector<Command> if_body;
+    vector<Command> else_body;
+};
+
+class Read : public Command{
+    Variable var;
+};
+
+class Write : public Command{
+    Variable var;
+};
+
+class Expression {
+    Variable var1, var2;
+    string math_operator;
 };
 
 
-class BasicBlock : public Instruction {
-    //instructions
-    //exitBlocks
+class Set_exp : public Command{
+    Variable var;
+    Expression exp;
 };
+
+

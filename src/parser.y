@@ -74,21 +74,22 @@ procedures:
 | procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {
 											logic.print_debug(yylineno);
 											logic.println_debug(" Procedure with vars");
+											logic.handle_proc_end();
 										       }
 | procedures KW_PROCEDURE proc_head KW_IS KW_BEGIN commands KW_END {
 									logic.print_debug(yylineno);
 									logic.println_debug(" Procedure without vars");
-
+									logic.handle_proc_end();
 								   }
 ;
 
 main:
-KW_PROGRAM KW_IS KW_VAR declarations KW_BEGIN commands KW_END {
+KW_PROGRAM KW_IS KW_VAR declarations {logic.start_main(); } KW_BEGIN commands KW_END {
 								logic.print_debug(yylineno);
 								logic.println_debug(" Main with vars");
 
 							      }
-| KW_PROGRAM KW_IS KW_BEGIN commands KW_END {
+| KW_PROGRAM KW_IS {logic.start_main(); } KW_BEGIN commands KW_END {
 						logic.print_debug(yylineno);
 						logic.println_debug( " Main without vars");
 				    	    }
@@ -145,6 +146,7 @@ proc_head:
 IDENTIFIER L_PAR declarations R_PAR	{
 						logic.print_debug( yylineno );
   						logic.println_debug(" ident: " + $1 + " with declarations");
+  						logic.handle_proc_head($1);
 
 					}
 ;
@@ -230,6 +232,7 @@ NUM					{
 
 void yyerror(char const *s){
   cerr<< s << " in line " << yylineno << endl;
+  logic.print_debug();
 }
 
 void run(FILE* data, ofstream& out, ofstream& debugst){
@@ -243,5 +246,7 @@ void run(FILE* data, ofstream& out, ofstream& debugst){
   	logic.debugFile = std::move(debugst);
   }
   yyparse();
+  logic.d_print_program_structures();
+  logic.d_print_var_stack();
   logic.close();
 }

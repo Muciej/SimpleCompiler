@@ -30,8 +30,25 @@ enum MathOp{
 class Variable{
 public:
     bool is_const = false;
+    bool external = false;
     string identifier;
     string range = "undef";
+
+    Variable() = default;
+
+    Variable(const Variable& other){
+        is_const = other.is_const;
+        external = other.external;
+        identifier = other.identifier;
+        range = other.range;
+    }
+
+    Variable(Variable&& other) noexcept {
+        is_const = other.is_const;
+        external = other.external;
+        identifier = other.identifier;
+        range = other.range;
+    }
 };
 
 class Command{
@@ -69,6 +86,8 @@ public:
     Procedure_obj* proc;
 
     explicit Procedure_ins(Procedure_obj* p) : proc(p) {};
+
+    vector<Variable*> vars_to_use;
 
     string debug_str() override{
         return "";

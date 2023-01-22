@@ -71,7 +71,7 @@ procedures main		{
 
 procedures:
   %empty
-| procedures KW_PROCEDURE proc_head KW_IS KW_VAR declarations KW_BEGIN commands KW_END {
+| procedures KW_PROCEDURE proc_head KW_IS KW_VAR { logic.set_def(true); } declarations {logic.set_def(false);} KW_BEGIN commands KW_END {
 											logic.print_debug(yylineno);
 											logic.println_debug(" Procedure with vars");
 											logic.handle_proc_end();
@@ -84,7 +84,7 @@ procedures:
 ;
 
 main:
-KW_PROGRAM KW_IS KW_VAR declarations {logic.start_main(); } KW_BEGIN commands KW_END {
+KW_PROGRAM KW_IS KW_VAR declarations { logic.start_main(); } KW_BEGIN commands KW_END {
 								logic.print_debug(yylineno);
 								logic.println_debug(" Main with vars");
 
@@ -154,12 +154,14 @@ IDENTIFIER L_PAR declarations R_PAR	{
 declarations:
 declarations COMMA IDENTIFIER		{
 						logic.print_debug( yylineno );
-						logic.println_debug(" , Ident: " + $3);
+						logic.println_debug(" Decl: Ident: " + $3);
+						logic.handle_var_decl($3);
+
 					}
 | IDENTIFIER				{
 						logic.print_debug( yylineno );
-						logic.println_debug(" Ident: "  + $1);
-
+						logic.println_debug(" Decl: Ident: "  + $1);
+						logic.handle_var_decl($1);
 					}
 ;
 

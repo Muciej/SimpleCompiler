@@ -98,7 +98,7 @@ public:
                     var_p = var_stack.top();
                     var_stack.pop();
                     var_p->range = curr_procedure->identifier;
-                    cout<<"Got "<<var_p->identifier<<" from stack"<<endl;
+//                    cout<<"Got "<<var_p->identifier<<" from stack"<<endl;
                 }
             } else{
                 string s = "Second declaration of procedure " + func_name;
@@ -112,14 +112,14 @@ public:
     }
 
     void handle_var_decl(const string& ident){
-        if(curr_procedure == nullptr){
+        if(curr_procedure == nullptr){  //we're before next procedure declaration
             auto var = new Variable();
             var->identifier = ident;
             var->external = true;
-            cout<<"Var delcaration: "<<var->identifier<<", curr_proc = nullptr, in_def = "<<in_def<<endl;
+//            cout<<"Var delcaration: "<<var->identifier<<", curr_proc = nullptr, in_def = "<<in_def<<endl;
             declared_variables.push_back(var);
             var_stack.push(declared_variables.back());
-        } else {
+        } else {    //we're before call to a procedure from a different procedure
 //            cout<<"Var delcaration: "<<ident<<" curr_proc: "<<curr_procedure->identifier<< " in_def = "<<in_def<<endl;
 
             if(in_def) {
@@ -134,7 +134,7 @@ public:
                     string error = "Usage of undeclared variable " + ident;
                     yyerror(error.c_str());
                 } else {
-//                    var_stack.push(var);
+                    var_stack.push(var);
                 }
             }
         }
@@ -153,6 +153,7 @@ public:
     }
 
     void d_print_program_structures(){
+        debugFile<<endl<<"---------DEBUG------------"<<endl<<endl;
         debugFile<<"Dump of defined_procedures vector:"<<endl;
         for (auto p : defined_procedures){
             debugFile<<p->identifier<<endl;
@@ -160,6 +161,13 @@ public:
         debugFile<<"Dump of declared_variables vector:"<<endl;
         for (auto v : declared_variables){
             debugFile<<v->identifier << " from " << v->range << " ext: " << v->external << endl;
+        }
+        debugFile<<"Dump of proc_ins vector:"<<endl;
+        for (auto ins : p_ins){
+            debugFile<<ins->proc->identifier<<" with variables:"<<endl;
+            for(auto v : ins->vars_to_use){
+                debugFile<<"\t"<<v->identifier<<" from "<<v->range<<endl;
+            }
         }
     }
 

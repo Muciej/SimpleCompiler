@@ -1,11 +1,10 @@
-FLAGS = -W -pedantic -std=c++17
+FLAGS = -g -W -pedantic -std=c++17
 .PHONY = all clean cleanall
 
 all: kompilator
 
 kompilator: lexer.o parser.o main.o logic.o classes.o
 	$(CXX) $^ -o $@
-	strip $@
 
 %.o: %.cpp
 	$(CXX) $(FLAGS) -c $^

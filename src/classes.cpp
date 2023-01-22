@@ -34,21 +34,21 @@ public:
     string identifier;
     string range = "undef";
 
-    Variable() = default;
-
-    Variable(const Variable& other){
-        is_const = other.is_const;
-        external = other.external;
-        identifier = other.identifier;
-        range = other.range;
-    }
-
-    Variable(Variable&& other) noexcept {
-        is_const = other.is_const;
-        external = other.external;
-        identifier = other.identifier;
-        range = other.range;
-    }
+//    Variable() = default;
+//
+//    Variable(const Variable& other){
+//        is_const = other.is_const;
+//        external = other.external;
+//        identifier = other.identifier;
+//        range = other.range;
+//    }
+//
+//    Variable(Variable&& other) noexcept {
+//        is_const = other.is_const;
+//        external = other.external;
+//        identifier = other.identifier;
+//        range = other.range;
+//    }
 };
 
 class Command{
@@ -62,23 +62,28 @@ public:
 class Condition{
 public:
     LogicOp l_op;
-    Variable left;
-    Variable right;
+    Variable* left;
+    Variable* right;
 
     Condition(){
         l_op = EQ_enum;
+        left = right = nullptr;
     }
-    Condition(LogicOp op, Variable l, Variable r) : l_op(op), left(std::move(l)), right(std::move(r)) {}
+    Condition(LogicOp op, Variable* l, Variable* r) : l_op(op), left(l), right(r) {}
 };
 
 class Procedure_obj{
 public:
-  string identifier;
-  vector<Command> body;
+    string identifier;
+    vector<Command*> body;
 
-  explicit Procedure_obj(string ident) : identifier(std::move(ident)) {}
+    explicit Procedure_obj(string ident) : identifier(std::move(ident)) {}
 
-
+    ~Procedure_obj() {
+      for (auto x: body) {
+          delete x;
+      }
+    }
 };
 
 class Procedure_ins : public Command{
@@ -97,41 +102,68 @@ public:
 class While : public Command{
 public:
     Condition cond;
-    vector<Command> body;
+    vector<Command*> body;
 
     string debug_str() override {
         return "";
+    }
+
+    ~While() override{
+        for(auto x : body){
+            delete x;
+        }
     }
 };
 
 class Repeat : public Command{
 public:
     Condition cond;
-    vector<Command> body;
+    vector<Command*> body;
 
     string debug_str() override {
         return "";
+    }
+
+    ~Repeat() override{
+        for(auto x : body){
+            delete x;
+        }
     }
 };
 
 class If_exp : public Command{
 public:
     Condition cond;
-    vector<Command> body;
+    vector<Command*> body;
 
     string debug_str() override {
         return "";
+    }
+
+    ~If_exp() override{
+        for(auto x : body){
+            delete x;
+        }
     }
 };
 
 class If_else : public Command{
 public:
     Condition cond;
-    vector<Command> if_body;
-    vector<Command> else_body;
+    vector<Command*> if_body;
+    vector<Command*> else_body;
 
     string debug_str() override {
         return "";
+    }
+
+    ~If_else() override{
+        for(auto x : if_body){
+            delete x;
+        }
+        for(auto x : else_body){
+            delete x;
+        }
     }
 };
 

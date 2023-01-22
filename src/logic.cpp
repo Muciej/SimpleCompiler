@@ -26,20 +26,20 @@ public:
     bool in_def = false;
 
     //program structures
-    vector<Procedure_obj> defined_procedures;
-    vector<Variable> declared_variables;
+    vector<Procedure_obj*> defined_procedures;
+    vector<Variable*> declared_variables;
     stack<Variable*> var_stack;
     stack<Command*> commands_stack;
 
     //containers
-    vector<Procedure_ins> p_ins;
-    vector<While> while_ins;
-    vector<Repeat> rep_ins;
-    vector<If_exp> if_ins;
-    vector<If_else> if_else_ins;
-    vector<Read> read_ins;
-    vector<Write> write_ins;
-    vector<Set_exp> set_ins;
+    vector<Procedure_ins*> p_ins;
+    vector<While*> while_ins;
+    vector<Repeat*> rep_ins;
+    vector<If_exp*> if_ins;
+    vector<If_else*> if_else_ins;
+    vector<Read*> read_ins;
+    vector<Write*> write_ins;
+    vector<Set_exp*> set_ins;
 
     void close(){
         outFile.close();
@@ -59,21 +59,19 @@ public:
 
     Procedure_obj* proc_check(const string& func_name){
         Procedure_obj* proc = nullptr;
-        for (Procedure_obj& p: defined_procedures){
-            if(p.identifier == func_name) proc = &p;
+        for (Procedure_obj* p: defined_procedures){
+            if(p->identifier == func_name) proc = p;
         }
         return proc;
     }
 
     Variable* var_check(const string& var_name, const string& var_range){
         Variable* var = nullptr;
-        for (Variable& v: declared_variables)
-            if(v.identifier == var_name && v.range == var_range)
-                var = &v;
+        for (Variable* v: declared_variables)
+            if(v->identifier == var_name && v->range == var_range)
+                var = v;
         return var;
     }
-
-
 
     void handle_proc_head(const string& func_name){
         Procedure_obj* proc = proc_check(func_name);
@@ -82,20 +80,20 @@ public:
                 string s = "Usage of undeclared procedure " + func_name;
                 yyerror(s.c_str());
             } else {
-                Procedure_ins ins{proc};
+                auto* ins = new Procedure_ins{proc};
                 while(!var_stack.empty()){
-                    ins.vars_to_use.push_back(var_stack.top());
+                    ins->vars_to_use.push_back(var_stack.top());
                     var_stack.pop();
                 }
-                p_ins.push_back(std::move(ins));
-                commands_stack.push(&p_ins.back());
+                p_ins.push_back(ins);
+                commands_stack.push(p_ins.back());
             }
         } else {    //declaration
             if(proc == nullptr){    //new procedure
-                Procedure_obj p{func_name};
-                defined_procedures.push_back(std::move(p));
+                auto* p = new Procedure_obj{func_name};
+                defined_procedures.push_back(p);
                 curr_procedure = proc_check(func_name);
-                Variable* var_p = nullptr;
+                Variable* var_p;
                 while(!var_stack.empty()){
                     var_p = var_stack.top();
                     var_stack.pop();
@@ -115,23 +113,23 @@ public:
 
     void handle_var_decl(const string& ident){
         if(curr_procedure == nullptr){
-//            cout<<"Var delcaration: "<<ident<<", curr_proc = nullptr, in_def = "<<in_def<<endl;
-            Variable var;
-            var.identifier = ident;
-            var.external = true;
-            declared_variables.push_back(std::move(var));
-            var_stack.push(var_check(ident, "undef"));
+            auto var = new Variable();
+            var->identifier = ident;
+            var->external = true;
+            cout<<"Var delcaration: "<<var->identifier<<", curr_proc = nullptr, in_def = "<<in_def<<endl;
+            declared_variables.push_back(var);
+            var_stack.push(declared_variables.back());
         } else {
 //            cout<<"Var delcaration: "<<ident<<" curr_proc: "<<curr_procedure->identifier<< " in_def = "<<in_def<<endl;
 
             if(in_def) {
-                Variable var;
-                var.identifier = ident;
-                var.external = false;
-                var.range = curr_procedure->identifier;
-                declared_variables.push_back(std::move(var));
+                auto var = new Variable();
+                var->identifier = ident;
+                var->external = false;
+                var->range = curr_procedure->identifier;
+                declared_variables.push_back(var);
             } else{
-                Variable* var = var_check(ident, curr_procedure->identifier);
+                auto var = var_check(ident, curr_procedure->identifier);
                 if(var == nullptr){
                     string error = "Usage of undeclared variable " + ident;
                     yyerror(error.c_str());
@@ -143,9 +141,9 @@ public:
     }
 
     void start_main(){
-        Procedure_obj main{"main"};
-        defined_procedures.push_back(std::move(main));
-        curr_procedure = proc_check("main");
+        auto main = new Procedure_obj{"main"};
+        defined_procedures.push_back(main);
+        curr_procedure = main;
         while(!var_stack.empty()){
             Variable* v = var_stack.top();
             var_stack.pop();
@@ -156,12 +154,12 @@ public:
 
     void d_print_program_structures(){
         debugFile<<"Dump of defined_procedures vector:"<<endl;
-        for (const Procedure_obj& p : defined_procedures){
-            debugFile<<p.identifier<<endl;
+        for (auto p : defined_procedures){
+            debugFile<<p->identifier<<endl;
         }
         debugFile<<"Dump of declared_variables vector:"<<endl;
-        for (const Variable& v : declared_variables){
-            debugFile<<v.identifier << " from " << v.range << " ext: " << v.external << endl;
+        for (auto v : declared_variables){
+            debugFile<<v->identifier << " from " << v->range << " ext: " << v->external << endl;
         }
     }
 
@@ -188,5 +186,38 @@ public:
     void set_def(bool val){
         debugFile<<"changing in_def to: "<<val<<endl;
         in_def = val;
+    }
+
+    ~Logic(){
+        //stacks should be empty at this point
+        for(auto v : declared_variables)
+            delete v;
+        for(auto p : defined_procedures){
+            delete p;
+        }
+        for(auto x : read_ins){
+            delete x;
+        }
+        for(auto x : p_ins){
+            delete x;
+        }
+        for(auto x : if_else_ins){
+            delete x;
+        }
+        for(auto x : if_ins){
+            delete x;
+        }
+        for(auto x : write_ins){
+            delete x;
+        }
+        for(auto x : rep_ins){
+            delete x;
+        }
+        for(auto x : while_ins){
+            delete x;
+        }
+        for(auto x : set_ins){
+            delete x;
+        }
     }
 };

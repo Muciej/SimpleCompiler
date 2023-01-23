@@ -193,6 +193,8 @@ public:
         Variable* var2 = var_stack.top();
         var_stack.pop();
         auto c_ins = new Condition(op, var1, var2);
+        c_ins->container = new vector<Command*>();
+        comm_containers.push(c_ins->container);
         cond_stack.push(c_ins);
     }
 
@@ -231,6 +233,60 @@ public:
         var->init_status = INITIALIZED;
         auto read_exp = new Read(var);
         comm_containers.top()->push_back(read_exp);
+    }
+
+    void handle_ifelse(){
+        vector<Command*>* else_cont = comm_containers.top();
+        comm_containers.pop();
+        vector<Command*>* if_cont = comm_containers.top();
+        comm_containers.pop();
+        auto if_ins = new If_else();
+        if_ins->cond = cond_stack.top();
+        cond_stack.pop();
+        if_ins->if_body = if_cont;
+        if_ins->else_body = else_cont;
+        comm_containers.top()->push_back(if_ins);
+    }
+
+    void handle_else(){
+        auto cont = new vector<Command*>();
+        comm_containers.push(cont);
+    }
+
+    void handle_if(){
+        vector<Command*>* cont = comm_containers.top();
+        comm_containers.pop();
+        auto if_ins = new If_exp();
+        if_ins->cond = cond_stack.top();
+        cond_stack.pop();
+        if_ins->body = cont;
+        comm_containers.top()->push_back(if_ins);
+    }
+
+    void handle_while(){
+        vector<Command*>* cont = comm_containers.top();
+        comm_containers.pop();
+        auto wh = new While();
+        wh->cond = cond_stack.top();
+        cond_stack.pop();
+        wh->body = cont;
+        comm_containers.top()->push_back(wh);
+    }
+
+    void handle_repeat_end(){
+        comm_containers.pop();  //removing empty container created by condition
+        vector<Command*>* cont = comm_containers.top();
+        comm_containers.pop();  //removing this loop container (now we're back to function)
+        auto rep = new Repeat();
+        comm_containers.top()->push_back(rep);
+        rep->body = cont;
+        rep->cond = cond_stack.top();
+        cond_stack.pop();
+    }
+
+    void handle_repeat_begin(){
+        auto cont = new vector<Command*>();
+        comm_containers.push(cont);
     }
 
     void start_main(){

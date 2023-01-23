@@ -115,22 +115,25 @@ IDENTIFIER SET expression SEMI		{
 						logic.handle_var_usage($1, true);
 						logic.handle_set_comm();
 					}
-| KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF {
+| KW_IF condition KW_THEN commands KW_ELSE {logic.handle_else(); } commands KW_ENDIF {
 								logic.print_debug(yylineno);
 								logic.println_debug(" If then else");
-
+								logic.handle_ifelse();
 							     }
 | KW_IF condition KW_THEN commands KW_ENDIF	{
 							logic.print_debug(yylineno);
 							logic.println_debug(" If then");
+							logic.handle_if();
 						}
 | KW_WHILE condition KW_DO commands KW_ENDWHILE	{
 							logic.print_debug(yylineno);
 							logic.println_debug(" While loop");
+							logic.handle_while();
 						}
-| KW_REPEAT commands KW_UNTIL condition SEMI	{
+| KW_REPEAT {logic.handle_repeat_begin(); } commands KW_UNTIL condition SEMI	{
 							logic.print_debug(yylineno);
 							logic.println_debug(" Unitl loop");
+							logic.handle_repeat_end();
 						}
 | proc_head SEMI			{
 						logic.print_debug(yylineno);

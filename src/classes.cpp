@@ -54,6 +54,7 @@ public:
     string l_op;
     Variable* left;
     Variable* right;
+    vector<Command*>* container = nullptr;
 
     Condition(){
         l_op = "==";
@@ -102,17 +103,17 @@ public:
 class While : public Command{
 public:
     Condition* cond;
-    vector<Command*> body;
+    vector<Command*>* body;
 
     void debug_print(std::ostream &out) override {
     out<<"While ( "<<cond->to_str()<<" )"<<endl;
-        for (auto c : body){
+        for (auto c : *body){
             c->debug_print(out);
         }
     }
 
     ~While() override{
-        for(auto x : body){
+        for(auto x : *body){
             delete x;
         }
     }
@@ -121,18 +122,18 @@ public:
 class Repeat : public Command{
 public:
     Condition* cond;
-    vector<Command*> body;
+    vector<Command*>* body;
 
     void debug_print(std::ostream &out) override {
         out<<"Do:"<<endl;
-        for (auto c : body){
+        for (auto c : *body){
             c->debug_print(out);
         }
         out<<"Until  ( "<<cond->to_str()<<" )"<<endl;
     }
 
     ~Repeat() override{
-        for(auto x : body){
+        for(auto x : *body){
             delete x;
         }
     }
@@ -141,46 +142,50 @@ public:
 class If_exp : public Command{
 public:
     Condition* cond;
-    vector<Command*> body;
+    vector<Command*>* body;
 
     void debug_print(std::ostream &out) override {
         out<<"If ( "<<cond->to_str()<<" ) then:"<<endl;
-        for (auto c : body){
+        for (auto c : *body){
             c->debug_print(out);
         }
+        delete body;
     }
 
     ~If_exp() override{
-        for(auto x : body){
+        for(auto x : *body){
             delete x;
         }
+        delete body;
     }
 };
 
 class If_else : public Command{
 public:
-    Condition cond;
-    vector<Command*> if_body;
-    vector<Command*> else_body;
+    Condition* cond;
+    vector<Command*>* if_body;
+    vector<Command*>* else_body;
 
     void debug_print(std::ostream &out) override {
-        out<<"If ( "<<cond.to_str()<<" ) then:"<<endl;
-        for (auto c : if_body){
+        out<<"If ( "<<cond->to_str()<<" ) then:"<<endl;
+        for (auto c : *if_body){
             c->debug_print(out);
         }
         out<<"else:"<<endl;
-        for (auto c : else_body){
+        for (auto c : *else_body){
             c->debug_print(out);
         }
     }
 
     ~If_else() override{
-        for(auto x : if_body){
+        for(auto x : *if_body){
             delete x;
         }
-        for(auto x : else_body){
+        delete if_body;
+        for(auto x : *else_body){
             delete x;
         }
+        delete else_body;
     }
 };
 

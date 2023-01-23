@@ -25,21 +25,27 @@ public:
     Procedure_obj* curr_procedure = nullptr;
     bool in_def = false;
 
+    //help variables
+    int const_count = 0;
+
     //program structures
     vector<Procedure_obj*> defined_procedures;
     vector<Variable*> declared_variables;
     stack<Variable*> var_stack;
-    stack<Command*> commands_stack;
+    stack<vector<Command*>*> comm_containers;
+    stack<Condition*> cond_stack;
+    Expression* curr_exp = nullptr;
 
     //containers
-    vector<Procedure_ins*> p_ins;
-    vector<While*> while_ins;
-    vector<Repeat*> rep_ins;
-    vector<If_exp*> if_ins;
-    vector<If_else*> if_else_ins;
-    vector<Read*> read_ins;
-    vector<Write*> write_ins;
-    vector<Set_exp*> set_ins;
+//    vector<Procedure_ins*> p_ins;
+//    vector<While*> while_ins;
+//    vector<Repeat*> rep_ins;
+//    vector<If_exp*> if_ins;
+//    vector<If_else*> if_else_ins;
+//    vector<Read*> read_ins;
+//    vector<Write*> write_ins;
+//    vector<Set_exp*> set_ins;
+//    vector<Condition*> conditions;
 
     void close(){
         outFile.close();
@@ -82,17 +88,21 @@ public:
             } else {
                 auto* ins = new Procedure_ins{proc};
                 while(!var_stack.empty()){
-                    ins->vars_to_use.push_back(var_stack.top());
+                    auto var = var_stack.top();
+                    var->init_status = AMBIGIOUS;
+                    ins->vars_to_use.push_back(var);
                     var_stack.pop();
                 }
-                p_ins.push_back(ins);
-                commands_stack.push(p_ins.back());
+//                p_ins.push_back(ins);
+//                comm_container.top()->push_back(p_ins.back());
+                  comm_containers.top()->push_back(ins);
             }
         } else {    //declaration
             if(proc == nullptr){    //new procedure
                 auto* p = new Procedure_obj{func_name};
                 defined_procedures.push_back(p);
                 curr_procedure = proc_check(func_name);
+                comm_containers.push(&curr_procedure->body);
                 Variable* var_p;
                 while(!var_stack.empty()){
                     var_p = var_stack.top();
@@ -109,6 +119,7 @@ public:
 
     void handle_proc_end(){
         curr_procedure = nullptr;
+        comm_containers.pop();
     }
 
     void handle_var_decl(const string& ident){
@@ -116,6 +127,7 @@ public:
             auto var = new Variable();
             var->identifier = ident;
             var->external = true;
+            var->init_status = AMBIGIOUS;
 //            cout<<"Var delcaration: "<<var->identifier<<", curr_proc = nullptr, in_def = "<<in_def<<endl;
             declared_variables.push_back(var);
             var_stack.push(declared_variables.back());
@@ -140,16 +152,95 @@ public:
         }
     }
 
+    /**
+     * Handles usage of variable in conditions, expressions and writes.
+     * Used variable must have been declared and initialized earlier
+     * @param ident
+     */
+    void handle_var_usage(const string& ident, bool can_be_uninit = false){
+        if(curr_procedure == nullptr){
+            yyerror("Variable usage outside procedure!");
+        }
+        auto var = var_check(ident, curr_procedure->identifier);
+        if (var == nullptr){
+            auto s = "Usage of undeclared variable" + ident;
+            yyerror(s.c_str());
+        } else if (var->init_status == NOT_INITIALIZED && !can_be_uninit){
+            auto s = "Usage of uninitialized variable " + var->identifier;
+            yyerror(s.c_str());
+        } else {
+            var_stack.push(var);
+        }
+    }
+
+    void handle_const_usage(const string& ident){
+        if(curr_procedure == nullptr){
+            yyerror("Variable usage outside procedure!");
+        }
+        auto const_v = new Variable();
+        const_v->identifier = "CONST_" + std::to_string(const_count);
+        const_count++;
+        const_v->is_const = true;
+        const_v->range = curr_procedure->identifier;
+        const_v->init_status = INITIALIZED;
+        declared_variables.push_back(const_v);
+        var_stack.push(const_v);
+    }
+
+    void handle_condition(string op){
+        Variable* var1 = var_stack.top();
+        var_stack.pop();
+        Variable* var2 = var_stack.top();
+        var_stack.pop();
+        auto c_ins = new Condition(op, var1, var2);
+        cond_stack.push(c_ins);
+    }
+
+    void handle_expression(const string& op){
+        Variable* var1 = var_stack.top();
+        var_stack.pop();
+        Variable *var2 = nullptr;
+        if(op != "just_var") {
+            var2 = var_stack.top();
+            var_stack.pop();
+        }
+        auto exp_ins = new Expression(op, var1, var2);
+        curr_exp = exp_ins;
+    }
+
+    void handle_set_comm(){
+        Variable* var = var_stack.top();
+        var_stack.pop();
+        auto set_exp = new Set_exp();
+        set_exp->var = var;
+        set_exp->exp = curr_exp;
+        var->init_status = INITIALIZED;
+        comm_containers.top()->push_back(set_exp);
+    }
+
+    void handle_write_comm(){
+        Variable* var = var_stack.top();
+        var_stack.pop();
+        auto write_exp = new Write(var);
+        comm_containers.top()->push_back(write_exp);
+    }
+
+    void handle_read_comm(){
+        Variable* var = var_stack.top();
+        var_stack.pop();
+        var->init_status = INITIALIZED;
+        auto read_exp = new Read(var);
+        comm_containers.top()->push_back(read_exp);
+    }
+
     void start_main(){
         auto main = new Procedure_obj{"main"};
         defined_procedures.push_back(main);
         curr_procedure = main;
-        while(!var_stack.empty()){
-            Variable* v = var_stack.top();
-            var_stack.pop();
-            v->range = curr_procedure->identifier;
-            v->external = false;
+        if(!comm_containers.empty()){
+            std::cerr<<"Some other command container left when entering main!"<<endl;
         }
+        comm_containers.push(&main->body);
     }
 
     void d_print_program_structures(){
@@ -162,13 +253,13 @@ public:
         for (auto v : declared_variables){
             debugFile<<v->identifier << " from " << v->range << " ext: " << v->external << endl;
         }
-        debugFile<<"Dump of proc_ins vector:"<<endl;
-        for (auto ins : p_ins){
-            debugFile<<ins->proc->identifier<<" with variables:"<<endl;
-            for(auto v : ins->vars_to_use){
-                debugFile<<"\t"<<v->identifier<<" from "<<v->range<<endl;
-            }
-        }
+//        debugFile<<"Dump of proc_ins vector:"<<endl;
+//        for (auto ins : p_ins){
+//            debugFile<<ins->proc->identifier<<" with variables:"<<endl;
+//            for(auto v : ins->vars_to_use){
+//                debugFile<<"\t"<<v->identifier<<" from "<<v->range<<endl;
+//            }
+//        }
     }
 
     /**
@@ -191,6 +282,13 @@ public:
             cout<<"In "<<curr_procedure->identifier<<endl;
     }
 
+    void print_program_structure() {
+        debugFile<<"Program is: "<<endl;
+        for(auto c : curr_procedure->body){
+            c->debug_print(debugFile);
+        }
+    }
+
     void set_def(bool val){
         debugFile<<"changing in_def to: "<<val<<endl;
         in_def = val;
@@ -203,29 +301,29 @@ public:
         for(auto p : defined_procedures){
             delete p;
         }
-        for(auto x : read_ins){
-            delete x;
-        }
-        for(auto x : p_ins){
-            delete x;
-        }
-        for(auto x : if_else_ins){
-            delete x;
-        }
-        for(auto x : if_ins){
-            delete x;
-        }
-        for(auto x : write_ins){
-            delete x;
-        }
-        for(auto x : rep_ins){
-            delete x;
-        }
-        for(auto x : while_ins){
-            delete x;
-        }
-        for(auto x : set_ins){
-            delete x;
-        }
+//        for(auto x : read_ins){
+//            delete x;
+//        }
+//        for(auto x : p_ins){
+//            delete x;
+//        }
+//        for(auto x : if_else_ins){
+//            delete x;
+//        }
+//        for(auto x : if_ins){
+//            delete x;
+//        }
+//        for(auto x : write_ins){
+//            delete x;
+//        }
+//        for(auto x : rep_ins){
+//            delete x;
+//        }
+//        for(auto x : while_ins){
+//            delete x;
+//        }
+//        for(auto x : set_ins){
+//            delete x;
+//        }
     }
 };

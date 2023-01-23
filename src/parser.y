@@ -84,7 +84,7 @@ procedures:
 ;
 
 main:
-KW_PROGRAM KW_IS KW_VAR declarations { logic.start_main(); } KW_BEGIN commands KW_END {
+KW_PROGRAM KW_IS KW_VAR {logic.start_main(); logic.set_def(true); } declarations { logic.set_def(false); } KW_BEGIN commands KW_END {
 								logic.print_debug(yylineno);
 								logic.println_debug(" Main with vars");
 
@@ -111,10 +111,14 @@ command:
 IDENTIFIER SET expression SEMI		{
 						logic.print_debug( yylineno );
 						logic.println_debug(" Ident: " + $1 + " set exp ");
+						logic.handle_expression($3);
+						logic.handle_var_usage($1, true);
+						logic.handle_set_comm();
 					}
 | KW_IF condition KW_THEN commands KW_ELSE commands KW_ENDIF {
 								logic.print_debug(yylineno);
 								logic.println_debug(" If then else");
+
 							     }
 | KW_IF condition KW_THEN commands KW_ENDIF	{
 							logic.print_debug(yylineno);
@@ -135,10 +139,13 @@ IDENTIFIER SET expression SEMI		{
 | KW_READ IDENTIFIER SEMI		{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Read ident:" +  $2 );
+						logic.handle_var_usage($2, true);
+						logic.handle_read_comm();
 					}
 | KW_WRITE value SEMI			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Write val");
+						logic.handle_write_comm();
 					}
 ;
 
@@ -169,26 +176,32 @@ expression:
 value					{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value " + $1);
+						$$ = "just_var";
 					}
 | value PLUS value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value + Value");
+						$$ = "+";
 					}
 | value MINUS value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value - Value");
+						$$ = "-";
 					}
 | value TIMES value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value * Value");
+						$$ = "*";
 					}
 | value DIV value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value / Value ");
+						$$ = "/";
 					}
 | value MOD value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value % Value ");
+						$$ = "%";
 					}
 ;
 
@@ -196,26 +209,32 @@ condition:
 value EQ value				{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value = Value");
+						logic.handle_condition("==");
 					}
 | value UNEQ value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value != Value");
+						logic.handle_condition("!=");
 					}
 | value GT value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value > Value");
+						logic.handle_condition(">");
 					}
 | value LT value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value < Value");
+						logic.handle_condition("<");
 					}
 | value GTEQ value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value >= Value");
+						logic.handle_condition(">=");
 					}
 | value LTEQ value			{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Value <= Value");
+						logic.handle_condition("<=");
 					}
 ;
 
@@ -223,10 +242,12 @@ value:
 NUM					{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Number: " + $1);
+						logic.handle_const_usage($1);
 					}
 | IDENTIFIER				{
 						logic.print_debug(yylineno);
 						logic.println_debug(" Ident: " + $1);
+						logic.handle_var_usage($1);
 					}
 ;
 
@@ -250,5 +271,6 @@ void run(FILE* data, ofstream& out, ofstream& debugst){
   yyparse();
   logic.d_print_program_structures();
   logic.d_print_var_stack();
+  logic.print_program_structure();
   logic.close();
 }

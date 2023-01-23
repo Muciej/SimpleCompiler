@@ -10,21 +10,10 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-enum LogicOp{
-    EQ_enum,
-    UNEQ_enum,
-    LTEQ_enum,
-    LT_enum,
-    GT_enum,
-    GTEQ_enum
-};
-
-enum MathOp{
-    PLUS_enum,
-    MINUS_enum,
-    TIMES_enum,
-    DIV_enum,
-    MOD_enum
+enum InitStatus{
+    NOT_INITIALIZED,
+    INITIALIZED,
+    AMBIGIOUS
 };
 
 class Variable{
@@ -33,6 +22,7 @@ public:
     bool external = false;
     string identifier;
     string range = "undef";
+    InitStatus init_status = NOT_INITIALIZED;
 
 //    Variable() = default;
 //
@@ -53,7 +43,7 @@ public:
 
 class Command{
 public:
-    virtual string debug_str() = 0;
+    virtual void debug_print(std::ostream &out) = 0;
     virtual ~Command() = default;
     //jakieś funkcje, które będą charakteryzować wszystkie komedny
     // może np. to_assembly albo coś takiego?
@@ -61,15 +51,23 @@ public:
 
 class Condition{
 public:
-    LogicOp l_op;
+    string l_op;
     Variable* left;
     Variable* right;
 
     Condition(){
-        l_op = EQ_enum;
+        l_op = "==";
         left = right = nullptr;
     }
-    Condition(LogicOp op, Variable* l, Variable* r) : l_op(op), left(l), right(r) {}
+    Condition(string op, Variable* l, Variable* r) : l_op(op), left(l), right(r) {}
+
+    [[nodiscard]] string to_str() const{
+        string str;
+        str += left->identifier;
+        str += l_op;
+        str += right->identifier;
+        return str;
+    }
 };
 
 class Procedure_obj{
@@ -94,18 +92,23 @@ public:
 
     vector<Variable*> vars_to_use;
 
-    string debug_str() override{
-        return "";
+    void debug_print(std::ostream &out) override{
+        out<<proc->identifier<<endl;
+        for(auto c : proc->body)
+            c->debug_print(out);
     }
 };
 
 class While : public Command{
 public:
-    Condition cond;
+    Condition* cond;
     vector<Command*> body;
 
-    string debug_str() override {
-        return "";
+    void debug_print(std::ostream &out) override {
+    out<<"While ( "<<cond->to_str()<<" )"<<endl;
+        for (auto c : body){
+            c->debug_print(out);
+        }
     }
 
     ~While() override{
@@ -117,11 +120,15 @@ public:
 
 class Repeat : public Command{
 public:
-    Condition cond;
+    Condition* cond;
     vector<Command*> body;
 
-    string debug_str() override {
-        return "";
+    void debug_print(std::ostream &out) override {
+        out<<"Do:"<<endl;
+        for (auto c : body){
+            c->debug_print(out);
+        }
+        out<<"Until  ( "<<cond->to_str()<<" )"<<endl;
     }
 
     ~Repeat() override{
@@ -133,11 +140,14 @@ public:
 
 class If_exp : public Command{
 public:
-    Condition cond;
+    Condition* cond;
     vector<Command*> body;
 
-    string debug_str() override {
-        return "";
+    void debug_print(std::ostream &out) override {
+        out<<"If ( "<<cond->to_str()<<" ) then:"<<endl;
+        for (auto c : body){
+            c->debug_print(out);
+        }
     }
 
     ~If_exp() override{
@@ -153,8 +163,15 @@ public:
     vector<Command*> if_body;
     vector<Command*> else_body;
 
-    string debug_str() override {
-        return "";
+    void debug_print(std::ostream &out) override {
+        out<<"If ( "<<cond.to_str()<<" ) then:"<<endl;
+        for (auto c : if_body){
+            c->debug_print(out);
+        }
+        out<<"else:"<<endl;
+        for (auto c : else_body){
+            c->debug_print(out);
+        }
     }
 
     ~If_else() override{
@@ -169,37 +186,54 @@ public:
 
 class Read : public Command{
 public:
-    Variable var;
+    Variable* var;
 
-    string debug_str() override {
-        return "";
+    explicit Read(Variable* v) : var(v) {}
+
+    void debug_print(std::ostream &out) override {
+        out<<"Read: "<<var->identifier<<endl;
     }
 };
 
 class Write : public Command{
 public:
-    Variable var;
+    Variable* var;
 
-    string debug_str() override {
-        return "";
+    explicit Write(Variable* v) : var(v) {}
+
+    void debug_print(std::ostream &out) override {
+        out<<"Write: "<<var->identifier<<endl;
     }
 };
 
 class Expression {
 public:
-    Variable var1, var2;
-    MathOp math_op;
+    Variable* left = nullptr;
+    Variable* right = nullptr;
+    string math_op;
+
+    Expression() = default;
+
+    Expression(string op, Variable* l, Variable* r) : math_op(op), left(l), right(r) {}
+
+    [[nodiscard]] string to_str() const{
+        string s;
+        s += left->identifier;
+        if(math_op != "just_var") {
+            s += math_op;
+            s += right->identifier;
+        }
+        return s;
+    }
 };
 
 
 class Set_exp : public Command{
 public:
-    Variable var;
-    Expression exp;
+    Variable* var;
+    Expression* exp;
 
-    string debug_str() override {
-        return "";
+    void debug_print(std::ostream &out) override {
+        out<<"Set "<<var->identifier<< " to "<<exp->to_str()<<endl;
     }
 };
-
-

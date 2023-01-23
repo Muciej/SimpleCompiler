@@ -465,9 +465,12 @@ public:
         } else if(math_op == "*"){
 
         } else if(math_op == "/"){
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_part_order("JZERO");
 
         } else if(math_op == "%") {
-
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_part_order("JZERO");
         }
     }
 };

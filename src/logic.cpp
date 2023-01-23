@@ -378,12 +378,13 @@ public:
 
         auto* coder = new AssemblerCode();
         handle_constants(coder);
-        int ind = coder->add_part_order("JUMP");
+        int ind;
+        if(defined_procedures.size() > 1) ind = coder->add_part_order("JUMP");
         for( auto p : defined_procedures){
             cout<<"Translating "<<p->identifier<<endl;
             p->get_assembly_code(coder);
         }
-        coder->set_part_order(ind, curr_procedure->start_pos);
+        if(defined_procedures.size() > 1) coder->set_part_order(ind, curr_procedure->start_pos);
         coder->print_out_file(outFile);
         outFile.close();
         delete coder;

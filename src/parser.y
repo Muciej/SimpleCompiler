@@ -272,8 +272,10 @@ void run(FILE* data, ofstream& out, ofstream& debugst){
   	logic.debugFile = std::move(debugst);
   }
   yyparse();
+  logic.give_mem_address();
   logic.d_print_program_structures();
   logic.d_print_var_stack();
   logic.print_program_structure();
+  logic.to_assembly();
   logic.close();
 }

@@ -179,6 +179,7 @@ public:
         }
         auto const_v = new Variable();
         const_v->identifier = "CONST_" + std::to_string(const_count);
+        const_v->const_val = atoll(ident.c_str());
         const_count++;
         const_v->is_const = true;
         const_v->range = curr_procedure->identifier;
@@ -307,7 +308,7 @@ public:
         }
         debugFile<<"Dump of declared_variables vector:"<<endl;
         for (auto v : declared_variables){
-            debugFile<<v->identifier << " from " << v->range << " ext: " << v->external << endl;
+            debugFile<<v->identifier << " from " << v->range << " ext: " << v->external << " address: "<<v->addr<<endl;
         }
 //        debugFile<<"Dump of proc_ins vector:"<<endl;
 //        for (auto ins : p_ins){
@@ -348,6 +349,26 @@ public:
     void set_def(bool val){
         debugFile<<"changing in_def to: "<<val<<endl;
         in_def = val;
+    }
+
+    void give_mem_address(){
+        int curr = 5;
+        for (auto p : defined_procedures){
+            p->start_address = curr;
+            for(auto var : declared_variables){
+                if(var->range == p->identifier){
+                    var->addr = curr;
+                    curr++;
+                }
+            }
+            p->jump_cell_address = curr;
+            curr++;
+        }
+    }
+
+    void to_assembly(){
+        auto* code = new AssemblerCode();
+
     }
 
     ~Logic(){

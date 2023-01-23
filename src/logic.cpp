@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <stack>
-#include <utility>
 #include "classes.cpp"
 
 void yyerror(char const *s);
@@ -304,7 +303,7 @@ public:
         debugFile<<endl<<"---------DEBUG------------"<<endl<<endl;
         debugFile<<"Dump of defined_procedures vector:"<<endl;
         for (auto p : defined_procedures){
-            debugFile<<p->identifier<<endl;
+            debugFile<<p->identifier<<" Start pos: "<<p->start_pos<<" Memory from: "<<p->first_var_address<<" Jump addr: "<<p->jump_cell_address<<endl;
         }
         debugFile<<"Dump of declared_variables vector:"<<endl;
         for (auto v : declared_variables){
@@ -354,7 +353,7 @@ public:
     void give_mem_address(){
         int curr = 5;
         for (auto p : defined_procedures){
-            p->start_address = curr;
+            p->first_var_address = curr;
             for(auto var : declared_variables){
                 if(var->range == p->identifier){
                     var->addr = curr;
@@ -366,9 +365,28 @@ public:
         }
     }
 
-    void to_assembly(){
-        auto* code = new AssemblerCode();
+    void handle_constants(AssemblerCode* coder){
+        for(auto v : declared_variables){
+            if(v->is_const){
+                coder->add_order("SET", v->const_val);
+                coder->add_order("STORE", v->addr);
+            }
+        }
+    }
 
+    void to_assembly(){
+
+        auto* coder = new AssemblerCode();
+        handle_constants(coder);
+        int ind = coder->add_part_order("JUMP");
+        for( auto p : defined_procedures){
+            cout<<"Translating "<<p->identifier<<endl;
+            p->get_assembly_code(coder);
+        }
+        coder->set_part_order(ind, curr_procedure->start_pos);
+        coder->print_out_file(outFile);
+        outFile.close();
+        delete coder;
     }
 
     ~Logic(){

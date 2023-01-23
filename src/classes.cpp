@@ -22,7 +22,7 @@ public:
     [[nodiscard]] string to_str() const{
         string s = ins;
         s += " ";
-        s += std::to_string(cell);
+        if(ins != "HALT") s += std::to_string(cell);
         return s;
     }
 };
@@ -35,6 +35,7 @@ public:
 
     void add_order(string ins, long long cell){
         AssemblyIns order{ins, cell};
+        orders.push_back(order);
         order_pos++;
     }
 
@@ -113,17 +114,58 @@ public:
     Variable* left;
     Variable* right;
     vector<Command*>* container = nullptr;
-    vector<AssemblyIns> assembler_ins;
 
     Condition(){
         l_op = "==";
         left = right = nullptr;
     }
-    Condition(string op, Variable* l, Variable* r) : l_op(op), left(l), right(r) {}
+    Condition(string op, Variable* r, Variable* l) : l_op(op), left(l), right(r) {}
 
-    void to_assembler(){
-        //TODO
+    void to_assembler(AssemblerCode* coder){
+        string l_sfx;
+        string r_sfx;
+        if(left->external)
+            l_sfx = "I";
+        if(right->external)
+            r_sfx = "I";
 
+        if(l_op == "=="){
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            coder->add_order("SUB"+r_sfx, right->addr);
+            coder->add_order("JPOS", coder->order_pos+3);
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("SUB"+l_sfx, left->addr);
+        } else if(l_op == "!="){
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            coder->add_order("SUB"+r_sfx, right->addr);
+            coder->add_order("JPOS", coder->order_pos+4);
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("SUB"+l_sfx, left->addr);
+            coder->add_order("JZERO", coder->order_pos+3);
+            coder->add_order("SET", 0);
+            coder->add_order("JUMP", coder->order_pos+2);
+            coder->add_order("SET", 1);
+        } else if(l_op == "<="){
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            coder->add_order("SUB"+r_sfx, right->addr);
+        } else if(l_op == ">="){
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("SUB"+l_sfx, left->addr);
+        } else if(l_op == "<"){
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("SUB"+l_sfx, left->addr);
+            coder->add_order("JZERO", coder->order_pos+3);
+            coder->add_order("SET", 0);
+            coder->add_order("JUMP", coder->order_pos+2);
+            coder->add_order("SET", 1);
+        } else if(l_op == ">"){
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            coder->add_order("SUB"+r_sfx, right->addr);
+            coder->add_order("JZERO", coder->order_pos+3);
+            coder->add_order("SET", 0);
+            coder->add_order("JUMP", coder->order_pos+2);
+            coder->add_order("SET", 1);
+        }
     }
 
     [[nodiscard]] string to_str() const{
@@ -139,10 +181,25 @@ class Procedure_obj{
 public:
     string identifier;
     vector<Command*> body;
-    long long start_address = -1;
+    int start_pos = -1;
+    long long first_var_address = -1;
     long long jump_cell_address = -1;
 
     explicit Procedure_obj(string ident) : identifier(std::move(ident)) {}
+
+    void get_assembly_code(AssemblerCode* coder){
+        start_pos = coder->get_order_pos();
+        for(auto c : body){
+//            cout<<"At: ";
+//            c->debug_print(cout);
+            c->get_assembly_code(coder);
+        }
+        if(identifier != "main") {
+            coder->add_order("JUMPI", jump_cell_address);
+        } else {
+            coder->add_order("HALT", 0);
+        }
+    }
 
     ~Procedure_obj() {
       for (auto x: body) {
@@ -166,7 +223,20 @@ public:
     }
 
     void get_assembly_code(AssemblerCode* coder) override{
+        int i = (int) vars_to_use.size()-1;
 
+        for(auto v : vars_to_use){
+            if(v->external){
+                coder->add_order("LOAD", v->addr);
+            } else {
+                coder->add_order("SET", v->addr);
+            }
+            coder->add_order("STORE", proc->first_var_address + i);
+            i--;
+        }
+        coder->add_order("SET", coder->get_order_pos()+3);
+        coder->add_order("STORE", proc->jump_cell_address);
+        coder->add_order("JUMP", proc->start_pos);
     }
 };
 
@@ -184,10 +254,10 @@ public:
 
     void get_assembly_code(AssemblerCode* coder) override{
         int start_ord_no = coder->get_order_pos();
-        cond->to_assembler();
-        for( const auto& ins : cond->assembler_ins){
-            coder->add_order(ins);
-        }
+        cond->to_assembler(coder);
+//        for( const auto& ins : cond->assembler_ins){
+//            coder->add_order(ins);
+//        }
         int jump_pos = coder->add_part_order("JPOS");
         for (auto comm : *body){
             comm->get_assembly_code(coder);
@@ -221,10 +291,10 @@ public:
         for (auto comm : *body){
             comm->get_assembly_code(coder);
         }
-        cond->to_assembler();
-        for(const auto& ins : cond->assembler_ins){
-            coder->add_order(ins);
-        }
+        cond->to_assembler(coder);
+//        for(const auto& ins : cond->assembler_ins){
+//            coder->add_order(ins);
+//        }
         coder->add_order("JZERO", start_ord_pos);
     }
 
@@ -245,14 +315,13 @@ public:
         for (auto c : *body){
             c->debug_print(out);
         }
-        delete body;
     }
 
     void get_assembly_code(AssemblerCode* coder) override{
-        cond->to_assembler();
-        for(const auto& ins : cond->assembler_ins){
-            coder->add_order(ins);
-        }
+        cond->to_assembler(coder);
+//        for(const auto& ins : cond->assembler_ins){
+//            coder->add_order(ins);
+//        }
         int jump_pos = coder->add_part_order("JPOS");
         for(const auto& ins : *body){
             ins->get_assembly_code(coder);
@@ -286,10 +355,10 @@ public:
     }
 
     void get_assembly_code(AssemblerCode* coder) override{
-        cond->to_assembler();
-        for(const auto& ins : cond->assembler_ins){
-            coder->add_order(ins);
-        }
+        cond->to_assembler(coder);
+//        for(const auto& ins : cond->assembler_ins){
+//            coder->add_order(ins);
+//        }
         int else_jump_pos = coder->add_part_order("JPOS");
         for(const auto& ins : *if_body){
             ins->get_assembly_code(coder);
@@ -359,7 +428,6 @@ public:
     Variable* left = nullptr;
     Variable* right = nullptr;
     string math_op;
-    vector<AssemblyIns> assembler_ins;
 
     Expression() = default;
 
@@ -375,8 +443,32 @@ public:
         return s;
     }
 
-    void to_assembler(){
+    void to_assembler(AssemblerCode* coder){
+        string l_sfx;
+        string r_sfx;
+        if(left->external)
+            l_sfx = "I";
+        if(math_op == "just_var"){
 
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            return;
+        }
+        if(right->external)
+            r_sfx = "I";
+
+        if(math_op == "+"){
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("ADD"+l_sfx, left->addr);
+        } else if(math_op == "-"){
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("SUB"+l_sfx, left->addr);
+        } else if(math_op == "*"){
+
+        } else if(math_op == "/"){
+
+        } else if(math_op == "%") {
+
+        }
     }
 };
 
@@ -391,10 +483,8 @@ public:
     }
 
     void get_assembly_code(AssemblerCode* coder) override{
-        exp->to_assembler();
-        for(const auto& ins : exp->assembler_ins){
-            coder->add_order(ins);
-        }
+        exp->to_assembler(coder);
+
         if(var->external){
             coder->add_order("STOREI", var->addr);
         } else {

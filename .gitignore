@@ -3,3 +3,4 @@ VM/
 example_programs/
 cmake-build-debug/
 .idea/
+*.geba

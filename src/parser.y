@@ -259,6 +259,7 @@ NUM					{
 void yyerror(char const *s){
   cerr<< s << " in line " << yylineno << endl;
   logic.print_debug();
+  exit(1);
 }
 
 void run(FILE* data, ofstream& out, ofstream& debugst){

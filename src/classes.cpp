@@ -22,7 +22,7 @@ public:
     [[nodiscard]] string to_str() const{
         string s = ins;
         s += " ";
-        if(ins != "HALT") s += std::to_string(cell);
+        if(ins != "HALT" && ins != "HALF") s += std::to_string(cell);
         return s;
     }
 };
@@ -158,6 +158,11 @@ public:
             coder->add_order("SET", 0);
             coder->add_order("JUMP", coder->order_pos+2);
             coder->add_order("SET", 1);
+
+            //nowe podejście
+//            coder->add_order("SET", 1);
+//            coder->add_order("ADD"+l_sfx, left->addr);
+//            coder->add_order("SUB"+r_sfx, right->addr);
         } else if(l_op == ">"){
             coder->add_order("LOAD"+l_sfx, left->addr);
             coder->add_order("SUB"+r_sfx, right->addr);
@@ -165,6 +170,11 @@ public:
             coder->add_order("SET", 0);
             coder->add_order("JUMP", coder->order_pos+2);
             coder->add_order("SET", 1);
+
+            //nowe podejście
+//            coder->add_order("SET", 1);
+//            coder->add_order("ADD"+r_sfx, right->addr);
+//            coder->add_order("SUB"+l_sfx, left->addr);
         }
     }
 
@@ -463,14 +473,100 @@ public:
             coder->add_order("LOAD"+r_sfx, right->addr);
             coder->add_order("SUB"+l_sfx, left->addr);
         } else if(math_op == "*"){
-
-        } else if(math_op == "/"){
+            coder->add_order("SET", 0);
+            coder->add_order("STORE", 1);
+            coder->add_order("STORE", 3);
             coder->add_order("LOAD"+r_sfx, right->addr);
-            coder->add_part_order("JZERO");
+            coder->add_order("STORE", 2);
+            coder->add_order("SET", 1);
+            coder->add_order("STORE", 4);
+            int pos = coder->get_order_pos();
+            coder->add_order("LOAD", 4);
+            coder->add_order("ADD", 0);
+            coder->add_order("SUB"+l_sfx, left->addr);
+            coder->add_order("JPOS", coder->order_pos+8);
+            coder->add_order("LOAD", 4);
+            coder->add_order("ADD", 0);
+            coder->add_order("STORE", 4);
+            coder->add_order("LOAD", 2);
+            coder->add_order("ADD", 0);
+            coder->add_order("STORE", 2);
+            coder->add_order("JUMP", pos);
+            coder->add_order("LOAD", 1);
+            coder->add_order("ADD", 2);
+            coder->add_order("STORE", 1);
+            coder->add_order("LOAD", 3);
+            coder->add_order("ADD", 4);
+            coder->add_order("STORE", 3);
+            int pos2 = coder->get_order_pos();
+            coder->add_order("SET", 1);
+            coder->add_order("ADD", 3);
+            coder->add_order("SUB"+l_sfx, left->addr);
+            coder->add_order("JPOS", coder->get_order_pos()+20);
+            pos = coder->get_order_pos();
+            coder->add_order("SET", 1);
+            coder->add_order("ADD"+l_sfx, left->addr);
+            coder->add_order("SUB", 3);
+            coder->add_order("SUB", 4);
+            coder->add_order("JPOS", coder->get_order_pos()+8);
+            coder->add_order("LOAD", 4);
+            coder->add_order("HALF", 0);
+            coder->add_order("STORE", 4);
+            coder->add_order("LOAD", 2);
+            coder->add_order("HALF", 0);
+            coder->add_order("STORE", 2);
+            coder->add_order("JUMP", pos);
+            coder->add_order("LOAD", 1);
+            coder->add_order("ADD", 2);
+            coder->add_order("STORE", 1);
+            coder->add_order("LOAD", 3);
+            coder->add_order("ADD", 4);
+            coder->add_order("STORE", 3);
+            coder->add_order("JUMP", pos2);
+            coder->add_order("LOAD", 1);
+        } else if(math_op == "/"){
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            int ind = coder->add_part_order("JZERO");
+            coder->add_order("LOAD"+r_sfx, right->addr);
+            coder->add_order("STORE", 2);
+            coder->add_order("SET", 0);
+            coder->add_order("STORE", 1);
+            int pos = coder->get_order_pos();
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            coder->add_order("SUB", 2);
+            coder->add_order("JPOS", coder->get_order_pos()+8);
+            coder->add_order("LOAD", 2);
+            coder->add_order("SUB"+l_sfx, left->addr);
+            coder->add_order("STORE", 2);
+            coder->add_order("SET", 1);
+            coder->add_order("ADD", 1);
+            coder->add_order("STORE", 1);
+            coder->add_order("JUMP", pos);
+            coder->add_order("LOAD", 1);
+            pos = coder->get_order_pos();
+            coder->set_part_order(ind, pos);
 
         } else if(math_op == "%") {
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            int ind = coder->add_part_order("JZERO");
             coder->add_order("LOAD"+r_sfx, right->addr);
-            coder->add_part_order("JZERO");
+            coder->add_order("STORE", 2);
+            coder->add_order("SET", 0);
+            coder->add_order("STORE", 1);
+            int pos = coder->get_order_pos();
+            coder->add_order("LOAD"+l_sfx, left->addr);
+            coder->add_order("SUB", 2);
+            coder->add_order("JPOS", coder->get_order_pos()+8);
+            coder->add_order("LOAD", 2);
+            coder->add_order("SUB"+l_sfx, left->addr);
+            coder->add_order("STORE", 2);
+            coder->add_order("SET", 1);
+            coder->add_order("ADD", 1);
+            coder->add_order("STORE", 1);
+            coder->add_order("JUMP", pos);
+            coder->add_order("LOAD", 2);
+            pos = coder->get_order_pos();
+            coder->set_part_order(ind, pos);
         }
     }
 };

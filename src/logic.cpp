@@ -121,6 +121,18 @@ public:
         comm_containers.pop();
     }
 
+    void chech_double_decl(){
+        for(auto var : declared_variables){
+            for(auto var2 : declared_variables){
+                if (var->identifier == var2->identifier && var->range == var2->range && var != var2){
+                    string s = "Second declaration of variable " + var->identifier;
+                    yyerror(s.c_str());
+                }
+            }
+        }
+    }
+
+
     void handle_var_decl(const string& ident){
         if(curr_procedure == nullptr){  //we're before next procedure declaration
             auto var = new Variable();
@@ -149,7 +161,9 @@ public:
                 }
             }
         }
+        chech_double_decl();
     }
+
 
     /**
      * Handles usage of variable in conditions, expressions and writes.

@@ -502,64 +502,72 @@ public:
 //            coder->set_part_order(ind1, coder->get_order_pos());
 //            coder->add_order("LOAD", 2);
 
-//             Niby mądrzejsze, ale wadliwe mnożenie
+//             Niby mądrzejsze, ale wadliwe (już chyba nie) mnożenie
             //sprawdzenie, czy b lub a to nie 0
-            coder->add_order("LOAD"+l_sfx, left->addr);
-            int ind1 = coder->add_part_order("JZERO");
-            coder->add_order("SET", 0, "multiplication start");
-            coder->add_order("STORE", 1);
-            coder->add_order("STORE", 3);
-            coder->add_order("LOAD"+r_sfx, right->addr);
-            int ind2 = coder->add_part_order("JZERO");
-            coder->add_order("STORE", 2);
-            coder->add_order("SET", 1);
-            coder->add_order("STORE", 4);
-            int pos = coder->get_order_pos();
-            coder->add_order("LOAD", 4);
-            coder->add_order("ADD", 0);
-            coder->add_order("SUB"+l_sfx, left->addr);
-            coder->add_order("JPOS", coder->order_pos+8);
-            coder->add_order("LOAD", 4);
-            coder->add_order("ADD", 0);
-            coder->add_order("STORE", 4);
-            coder->add_order("LOAD", 2);
-            coder->add_order("ADD", 0);
-            coder->add_order("STORE", 2);
-            coder->add_order("JUMP", pos);
-            coder->add_order("LOAD", 1);
-            coder->add_order("ADD", 2);
-            coder->add_order("STORE", 1);
-            coder->add_order("LOAD", 3);
-            coder->add_order("ADD", 4);
-            coder->add_order("STORE", 3);
-            int pos2 = coder->get_order_pos();
-            coder->add_order("SET", 1);
-            coder->add_order("ADD", 3);
-            coder->add_order("SUB"+l_sfx, left->addr);
-            coder->add_order("JPOS", coder->get_order_pos()+20);
-            pos = coder->get_order_pos();
-            coder->add_order("SET", 1);
-            coder->add_order("ADD"+l_sfx, left->addr);
-            coder->add_order("SUB", 3);
-            coder->add_order("SUB", 4);
-            coder->add_order("JPOS", coder->get_order_pos()+8);
-            coder->add_order("LOAD", 4);
-            coder->add_order("HALF", 0);
-            coder->add_order("STORE", 4);
-            coder->add_order("LOAD", 2);
-            coder->add_order("HALF", 0);
-            coder->add_order("STORE", 2);
-            coder->add_order("JUMP", pos);
-            coder->add_order("LOAD", 1);
-            coder->add_order("ADD", 2);
-            coder->add_order("STORE", 1);
-            coder->add_order("LOAD", 3);
-            coder->add_order("ADD", 4);
-            coder->add_order("STORE", 3);
-            coder->add_order("JUMP", pos2);
-            coder->add_order("LOAD", 1, "multiplication end");
-            coder->set_part_order(ind1, coder->get_order_pos());
-            coder->set_part_order(ind2, coder->get_order_pos());
+            if(left->is_const && left->const_val == 1){
+                coder->add_order("LOAD"+r_sfx, right->addr);
+            } else if(left->is_const && left->const_val == 2){
+                coder->add_order("LOAD"+r_sfx, right->addr);
+                coder->add_order("ADD", 0);
+
+            } else {
+                coder->add_order("LOAD" + l_sfx, left->addr);
+                int ind1 = coder->add_part_order("JZERO");
+                coder->add_order("SET", 0, "multiplication start");
+                coder->add_order("STORE", 1);
+                coder->add_order("STORE", 3);
+                coder->add_order("LOAD" + r_sfx, right->addr);
+                int ind2 = coder->add_part_order("JZERO");
+                coder->add_order("STORE", 2);
+                coder->add_order("SET", 1);
+                coder->add_order("STORE", 4);
+                int pos = coder->get_order_pos();
+                coder->add_order("LOAD", 4);
+                coder->add_order("ADD", 0);
+                coder->add_order("SUB" + l_sfx, left->addr);
+                coder->add_order("JPOS", coder->order_pos + 8);
+                coder->add_order("LOAD", 4);
+                coder->add_order("ADD", 0);
+                coder->add_order("STORE", 4);
+                coder->add_order("LOAD", 2);
+                coder->add_order("ADD", 0);
+                coder->add_order("STORE", 2);
+                coder->add_order("JUMP", pos);
+                coder->add_order("LOAD", 1);
+                coder->add_order("ADD", 2);
+                coder->add_order("STORE", 1);
+                coder->add_order("LOAD", 3);
+                coder->add_order("ADD", 4);
+                coder->add_order("STORE", 3);
+                int pos2 = coder->get_order_pos();
+                coder->add_order("SET", 1);
+                coder->add_order("ADD", 3);
+                coder->add_order("SUB" + l_sfx, left->addr);
+                coder->add_order("JPOS", coder->get_order_pos() + 20);
+                pos = coder->get_order_pos();
+                coder->add_order("SET", 1);
+                coder->add_order("ADD" + l_sfx, left->addr);
+                coder->add_order("SUB", 3);
+                coder->add_order("SUB", 4);
+                coder->add_order("JPOS", coder->get_order_pos() + 8);
+                coder->add_order("LOAD", 4);
+                coder->add_order("HALF", 0);
+                coder->add_order("STORE", 4);
+                coder->add_order("LOAD", 2);
+                coder->add_order("HALF", 0);
+                coder->add_order("STORE", 2);
+                coder->add_order("JUMP", pos);
+                coder->add_order("LOAD", 1);
+                coder->add_order("ADD", 2);
+                coder->add_order("STORE", 1);
+                coder->add_order("LOAD", 3);
+                coder->add_order("ADD", 4);
+                coder->add_order("STORE", 3);
+                coder->add_order("JUMP", pos2);
+                coder->add_order("LOAD", 1, "multiplication end");
+                coder->set_part_order(ind1, coder->get_order_pos());
+                coder->set_part_order(ind2, coder->get_order_pos());
+            }
 
         } else if(math_op == "/"){
             //stare
@@ -583,72 +591,80 @@ public:
 //            coder->add_order("LOAD", 1);
 //            pos = coder->get_order_pos();
 //            coder->set_part_order(ind, pos);
+            if(left->is_const && left->const_val == 1){
+                coder->add_order("LOAD"+r_sfx, right->addr);
+            } else if(left->is_const && left->const_val == 2){
+                coder->add_order("LOAD"+r_sfx, right->addr);
+                coder->add_order("HALF", 0);
 
-            coder->add_order("SET", 0, "div start");
-            coder->add_order("STORE", 1);
-            coder->add_order("LOAD"+r_sfx, right->addr);
-            int ind1 = coder->add_part_order("JZERO");
-            coder->add_order("STORE", 2);
-            coder->add_order("LOAD"+l_sfx, left->addr);
-            int ind2 = coder->add_part_order("JZERO");
-            coder->add_order("STORE", 3);
-            coder->add_order("SET", 1);
-            coder->add_order("STORE", 4);
-            coder->add_order("ADD"+r_sfx, right->addr);
-            coder->add_order("SUB"+l_sfx, left->addr);
-            int ind3 = coder->add_part_order("JZERO");
+            } else {
+
+                coder->add_order("SET", 0, "div start");
+                coder->add_order("STORE", 1);
+                coder->add_order("LOAD" + r_sfx, right->addr);
+                int ind1 = coder->add_part_order("JZERO");
+                coder->add_order("STORE", 2);
+                coder->add_order("LOAD" + l_sfx, left->addr);
+                int ind2 = coder->add_part_order("JZERO");
+                coder->add_order("STORE", 3);
+                coder->add_order("SET", 1);
+                coder->add_order("STORE", 4);
+                coder->add_order("ADD" + r_sfx, right->addr);
+                coder->add_order("SUB" + l_sfx, left->addr);
+                int ind3 = coder->add_part_order("JZERO");
 
 
-            int inda = coder->get_order_pos();
-            coder->add_order("LOAD", 3);
-            coder->add_order("ADD", 3);
-            coder->add_order("SUB", 2);
-            coder->add_order("JPOS", coder->get_order_pos()+8);
-            coder->add_order("LOAD", 3);
-            coder->add_order("ADD", 3);
-            coder->add_order("STORE", 3);
-            coder->add_order("LOAD", 4);
-            coder->add_order("ADD", 4);
-            coder->add_order("STORE", 4);
-            coder->add_order("JUMP", inda);
+                int inda = coder->get_order_pos();
+                coder->add_order("LOAD", 3);
+                coder->add_order("ADD", 3);
+                coder->add_order("SUB", 2);
+                coder->add_order("JPOS", coder->get_order_pos() + 8);
+                coder->add_order("LOAD", 3);
+                coder->add_order("ADD", 3);
+                coder->add_order("STORE", 3);
+                coder->add_order("LOAD", 4);
+                coder->add_order("ADD", 4);
+                coder->add_order("STORE", 4);
+                coder->add_order("JUMP", inda);
 
-            coder->add_order("LOAD", 1);
-            coder->add_order("ADD", 4);
-            coder->add_order("STORE", 1);
-            coder->add_order("LOAD", 2);
-            coder->add_order("SUB", 3);
-            coder->add_order("STORE", 2);
+                coder->add_order("LOAD", 1);
+                coder->add_order("ADD", 4);
+                coder->add_order("STORE", 1);
+                coder->add_order("LOAD", 2);
+                coder->add_order("SUB", 3);
+                coder->add_order("STORE", 2);
 
-            int pos1 = coder->get_order_pos();
-            coder->add_order("LOAD"+l_sfx, left->addr);
-            coder->add_order("SUB", 2);
-            int ind4 = coder->add_part_order("JPOS");
-            int pos2 = coder->get_order_pos();
-            coder->add_order("SET", 1);
-            coder->add_order("ADD", 2);
-            coder->add_order("SUB", 3);
-            coder->add_order("JPOS", coder->get_order_pos()+8);
-            coder->add_order("LOAD", 3);
-            coder->add_order("HALF", 0);
-            coder->add_order("STORE", 3);
-            coder->add_order("LOAD", 4);
-            coder->add_order("HALF", 0);
-            coder->add_order("STORE", 4);
-            coder->add_order("JUMP", pos2);
+                int pos1 = coder->get_order_pos();
+                coder->add_order("LOAD" + l_sfx, left->addr);
+                coder->add_order("SUB", 2);
+                int ind4 = coder->add_part_order("JPOS");
+                int pos2 = coder->get_order_pos();
+                coder->add_order("SET", 1);
+                coder->add_order("ADD", 2);
+                coder->add_order("SUB", 3);
+                coder->add_order("JPOS", coder->get_order_pos() + 8);
+                coder->add_order("LOAD", 3);
+                coder->add_order("HALF", 0);
+                coder->add_order("STORE", 3);
+                coder->add_order("LOAD", 4);
+                coder->add_order("HALF", 0);
+                coder->add_order("STORE", 4);
+                coder->add_order("JUMP", pos2);
 
-            coder->add_order("LOAD", 2);
-            coder->add_order("SUB", 3);
-            coder->add_order("STORE", 2);
-            coder->add_order("LOAD", 1);
-            coder->add_order("ADD", 4);
-            coder->add_order("STORE", 1);
-            coder->add_order("JUMP", pos1);
-            coder->set_part_order(ind4, coder->get_order_pos());
-            coder->add_order("LOAD", 1, "div end");
-            pos1 = coder->get_order_pos();
-            coder->set_part_order(ind1, pos1);
-            coder->set_part_order(ind2, pos1);
-            coder->set_part_order(ind3, pos1);
+                coder->add_order("LOAD", 2);
+                coder->add_order("SUB", 3);
+                coder->add_order("STORE", 2);
+                coder->add_order("LOAD", 1);
+                coder->add_order("ADD", 4);
+                coder->add_order("STORE", 1);
+                coder->add_order("JUMP", pos1);
+                coder->set_part_order(ind4, coder->get_order_pos());
+                coder->add_order("LOAD", 1, "div end");
+                pos1 = coder->get_order_pos();
+                coder->set_part_order(ind1, pos1);
+                coder->set_part_order(ind2, pos1);
+                coder->set_part_order(ind3, pos1);
+            }
 
         } else if(math_op == "%") {
             //stare

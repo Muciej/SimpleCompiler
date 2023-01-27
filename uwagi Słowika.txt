@@ -1,9 +1,0 @@
-nie ma wymagania, żeby pamiętać, czy parametry są używane jako wejście czy wyjście, a co za tym idzie nie musimy sprawdzać,
-czy funkcja przypadkiem nie używa parametru OUT jako parametru IN. Można to sprawdzać, ale nie trzeba
-
-
-Dzisiaj dr patrzy tylko na te programy "example" i zaznacza, że "coś jest", nie jest to jeszcze pełne zaliczenie (z doktorem Gębalą może być trochę inaczej, ale klepnął terminarz znajdujący się na stronie dra Słowika)
-
-Za tydzień każdy może przyjść 
-
-yylex() zapisać tak, żeby przyjmował unię (np ze stringiem i long longiem)

@@ -1,0 +1,12 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/g/Mój dysk/V sem/Języki formalne i techniki translacji/Laboratoria/kompilator/testowe/main.cpp
+iostream
+-
+

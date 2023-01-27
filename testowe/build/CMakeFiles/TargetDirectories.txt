@@ -1,0 +1,3 @@
+/mnt/g/Mój dysk/V sem/Języki formalne i techniki translacji/Laboratoria/kompilator/testowe/build/CMakeFiles/rebuild_cache.dir
+/mnt/g/Mój dysk/V sem/Języki formalne i techniki translacji/Laboratoria/kompilator/testowe/build/CMakeFiles/edit_cache.dir
+/mnt/g/Mój dysk/V sem/Języki formalne i techniki translacji/Laboratoria/kompilator/testowe/build/CMakeFiles/main.dir

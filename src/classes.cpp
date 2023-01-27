@@ -314,7 +314,7 @@ public:
 //        for(const auto& ins : cond->assembler_ins){
 //            coder->add_order(ins);
 //        }
-        coder->add_order("JZERO", start_ord_pos);
+        coder->add_order("JPOS", start_ord_pos);
     }
 
     ~Repeat() override{
@@ -502,6 +502,8 @@ public:
 //            coder->set_part_order(ind1, coder->get_order_pos());
 //            coder->add_order("LOAD", 2);
 
+
+
 //             Niby mądrzejsze, ale wadliwe (już chyba nie) mnożenie
             //sprawdzenie, czy b lub a to nie 0
             if(left->is_const && left->const_val == 1){
@@ -591,6 +593,8 @@ public:
 //            coder->add_order("LOAD", 1);
 //            pos = coder->get_order_pos();
 //            coder->set_part_order(ind, pos);
+
+            //wersja nowa
             if(left->is_const && left->const_val == 1){
                 coder->add_order("LOAD"+r_sfx, right->addr);
             } else if(left->is_const && left->const_val == 2){

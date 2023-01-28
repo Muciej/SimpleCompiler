@@ -26,6 +26,7 @@ public:
 
     //help variables
     int const_count = 0;
+    int loop_depth = 0;
 
     //program structures
     vector<Procedure_obj*> defined_procedures;
@@ -87,8 +88,10 @@ public:
             } else {
                 auto* ins = new Procedure_ins{proc};
                 while(!var_stack.empty()){
-                    auto var = var_stack.top();
-                    var->init_status = AMBIGIOUS;
+                    Variable* var = var_stack.top();
+//                    var->init_status = AMBIGIOUS;
+                    var->is_used = false;
+                    var->is_declared = MAYBE;
                     ins->vars_to_use.push_back(var);
                     var_stack.pop();
                 }
@@ -117,6 +120,7 @@ public:
     }
 
     void handle_proc_end(){
+        var_initialization_check();
         curr_procedure = nullptr;
         comm_containers.pop();
     }
@@ -132,31 +136,55 @@ public:
         }
     }
 
+    void var_initialization_check(){
+        for (auto var : declared_variables){
+            if(var->is_used && var->is_declared == NO){
+                string s = "Usage of uninitialized variable " + var->identifier;
+                yyerror(s.c_str());
+            }
+        }
+    }
+
+    void depth_inc(){
+        loop_depth++;
+    }
+
+    void depth_dec(){
+        loop_depth--;
+        var_initialization_check();
+    }
+
 
     void handle_var_decl(const string& ident){
         if(curr_procedure == nullptr){  //we're before next procedure declaration
-            auto var = new Variable();
+            auto var = new Variable();  //and we're dealing with an external variable
             var->identifier = ident;
             var->external = true;
-            var->init_status = AMBIGIOUS;
+//            var->init_status = AMBIGIOUS;
+            var->is_used = false;
+            var->is_declared = MAYBE;
+
 //            cout<<"Var delcaration: "<<var->identifier<<", curr_proc = nullptr, in_def = "<<in_def<<endl;
             declared_variables.push_back(var);
             var_stack.push(declared_variables.back());
-        } else {    //we're before call to a procedure from a different procedure
+        } else {
 //            cout<<"Var delcaration: "<<ident<<" curr_proc: "<<curr_procedure->identifier<< " in_def = "<<in_def<<endl;
-
-            if(in_def) {
+            if(in_def) {        //we're in procedure declaration -> detected variable is an internal procedure variable
                 auto var = new Variable();
                 var->identifier = ident;
                 var->external = false;
+                var->is_used = false;
+                var->is_declared = NO;
                 var->range = curr_procedure->identifier;
                 declared_variables.push_back(var);
-            } else{
+            } else{         //we're before call to a procedure from a different procedure
                 auto var = var_check(ident, curr_procedure->identifier);
                 if(var == nullptr){
                     string error = "Usage of undeclared variable " + ident;
                     yyerror(error.c_str());
                 } else {
+                    var->is_used = true;
+                    var->is_declared = MAYBE;
                     var_stack.push(var);
                 }
             }
@@ -170,18 +198,18 @@ public:
      * Used variable must have been declared and initialized earlier
      * @param ident
      */
-    void handle_var_usage(const string& ident, bool can_be_uninit = false){
+    void handle_var_usage(const string &ident, bool can_be_uninit = false) {
         if(curr_procedure == nullptr){
             yyerror("Variable usage outside procedure!");
         }
         auto var = var_check(ident, curr_procedure->identifier);
         if (var == nullptr){
-            auto s = "Usage of undeclared variable" + ident;
-            yyerror(s.c_str());
-        } else if (var->init_status == NOT_INITIALIZED && !can_be_uninit){
-            auto s = "Usage of uninitialized variable " + var->identifier;
+            auto s = "Usage of undeclared variable " + ident;
             yyerror(s.c_str());
         } else {
+            var->is_used = true;
+            if(can_be_uninit) var->is_declared = MAYBE;
+            if (loop_depth == 0) var_initialization_check();
             var_stack.push(var);
         }
     }
@@ -196,7 +224,8 @@ public:
         const_count++;
         const_v->is_const = true;
         const_v->range = curr_procedure->identifier;
-        const_v->init_status = INITIALIZED;
+        const_v->is_declared = YES;
+//        const_v->init_status = INITIALIZED;
         declared_variables.push_back(const_v);
         var_stack.push(const_v);
     }
@@ -214,12 +243,15 @@ public:
 
     void handle_expression(const string& op){
         Variable* var1 = var_stack.top();
+        var1->is_used = true;
         var_stack.pop();
         Variable *var2 = nullptr;
         if(op != "just_var") {
             var2 = var_stack.top();
+            var2->is_used = true;
             var_stack.pop();
         }
+        if(loop_depth == 0) var_initialization_check();
         auto exp_ins = new Expression(op, var1, var2);
         curr_exp = exp_ins;
     }
@@ -230,7 +262,8 @@ public:
         auto set_exp = new Set_exp();
         set_exp->var = var;
         set_exp->exp = curr_exp;
-        var->init_status = INITIALIZED;
+//        var->init_status = INITIALIZED;
+        var->is_declared = YES;
         comm_containers.top()->push_back(set_exp);
     }
 
@@ -244,7 +277,8 @@ public:
     void handle_read_comm(){
         Variable* var = var_stack.top();
         var_stack.pop();
-        var->init_status = INITIALIZED;
+//        var->init_status = INITIALIZED;
+        var->is_declared = YES;
         auto read_exp = new Read(var);
         comm_containers.top()->push_back(read_exp);
     }
@@ -395,7 +429,7 @@ public:
         int ind;
         if(defined_procedures.size() > 1) ind = coder->add_part_order("JUMP");
         for( auto p : defined_procedures){
-            cout<<"Translating "<<p->identifier<<endl;
+//            cout<<"Translating "<<p->identifier<<endl;
             p->get_assembly_code(coder);
         }
         if(defined_procedures.size() > 1) coder->set_part_order(ind, curr_procedure->start_pos);

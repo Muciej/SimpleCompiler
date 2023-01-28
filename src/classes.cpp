@@ -75,10 +75,16 @@ public:
     }
 };
 
-enum InitStatus{
-    NOT_INITIALIZED,
-    INITIALIZED,
-    AMBIGIOUS
+//enum InitStatus{
+//    NOT_INITIALIZED,
+//    INITIALIZED,
+//    AMBIGIOUS
+//};
+
+enum Declared{
+    YES,
+    NO,
+    MAYBE
 };
 
 class Variable{
@@ -87,7 +93,9 @@ public:
     bool external = false;
     string identifier;
     string range = "undef";
-    InitStatus init_status = NOT_INITIALIZED;
+//    InitStatus init_status = NOT_INITIALIZED;
+    Declared is_declared = NO;
+    bool is_used = false;
     long long const_val;
     int addr = -1;
 

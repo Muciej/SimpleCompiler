@@ -217,8 +217,6 @@ public:
     void get_assembly_code(AssemblerCode* coder){
         start_pos = coder->get_order_pos();
         for(auto c : body){
-//            cout<<"At: ";
-//            c->debug_print(cout);
             c->get_assembly_code(coder);
         }
         if(identifier != "main") {
@@ -282,9 +280,6 @@ public:
     void get_assembly_code(AssemblerCode* coder) override{
         int start_ord_no = coder->get_order_pos();
         cond->to_assembler(coder);
-//        for( const auto& ins : cond->assembler_ins){
-//            coder->add_order(ins);
-//        }
         int jump_pos = coder->add_part_order("JPOS");
         for (auto comm : *body){
             comm->get_assembly_code(coder);
@@ -319,9 +314,6 @@ public:
             comm->get_assembly_code(coder);
         }
         cond->to_assembler(coder);
-//        for(const auto& ins : cond->assembler_ins){
-//            coder->add_order(ins);
-//        }
         coder->add_order("JPOS", start_ord_pos);
     }
 
@@ -346,9 +338,6 @@ public:
 
     void get_assembly_code(AssemblerCode* coder) override{
         cond->to_assembler(coder);
-//        for(const auto& ins : cond->assembler_ins){
-//            coder->add_order(ins);
-//        }
         int jump_pos = coder->add_part_order("JPOS");
         for(const auto& ins : *body){
             ins->get_assembly_code(coder);
@@ -490,30 +479,6 @@ public:
             coder->add_order("LOAD"+r_sfx, right->addr);
             coder->add_order("SUB"+l_sfx, left->addr);
         } else if(math_op == "*"){
-
-            //Głupie mnożenie
-//            coder->add_order("SET", 0, "multiplication start");
-//            coder->add_order("STORE", 1);
-//            coder->add_order("STORE", 2);
-//            int pos1 = coder->get_order_pos();
-//            coder->add_order("SET", 1);
-//            coder->add_order("ADD", 1);
-//            coder->add_order("SUB"+l_sfx, left->addr);
-//            int ind1 = coder->add_part_order("JPOS");
-//            coder->add_order("LOAD", 2);
-//            coder->add_order("ADD"+r_sfx, right->addr);
-//            coder->add_order("STORE", 2);
-//            coder->add_order("SET", 1);
-//            coder->add_order("ADD", 1);
-//            coder->add_order("STORE", 1);
-//            coder->add_order("JUMP", pos1);
-//            coder->set_part_order(ind1, coder->get_order_pos());
-//            coder->add_order("LOAD", 2);
-
-
-
-//             Niby mądrzejsze, ale wadliwe (już chyba nie) mnożenie
-            //sprawdzenie, czy b lub a to nie 0
             if(left->is_const && left->const_val == 1){
                 coder->add_order("LOAD"+r_sfx, right->addr);
             } else if(left->is_const && left->const_val == 2){
@@ -580,29 +545,6 @@ public:
             }
 
         } else if(math_op == "/"){
-            //stare
-//            coder->add_order("LOAD"+l_sfx, left->addr);
-//            int ind = coder->add_part_order("JZERO");
-//            coder->add_order("LOAD"+r_sfx, right->addr);
-//            coder->add_order("STORE", 2);
-//            coder->add_order("SET", 0);
-//            coder->add_order("STORE", 1);
-//            int pos = coder->get_order_pos();
-//            coder->add_order("LOAD"+l_sfx, left->addr);
-//            coder->add_order("SUB", 2);
-//            coder->add_order("JPOS", coder->get_order_pos()+8);
-//            coder->add_order("LOAD", 2);
-//            coder->add_order("SUB"+l_sfx, left->addr);
-//            coder->add_order("STORE", 2);
-//            coder->add_order("SET", 1);
-//            coder->add_order("ADD", 1);
-//            coder->add_order("STORE", 1);
-//            coder->add_order("JUMP", pos);
-//            coder->add_order("LOAD", 1);
-//            pos = coder->get_order_pos();
-//            coder->set_part_order(ind, pos);
-
-            //wersja nowa
             if(left->is_const && left->const_val == 1){
                 coder->add_order("LOAD"+r_sfx, right->addr);
             } else if(left->is_const && left->const_val == 2){
@@ -679,30 +621,6 @@ public:
             }
 
         } else if(math_op == "%") {
-            //stare
-//            coder->add_order("LOAD"+l_sfx, left->addr);
-//            int ind = coder->add_part_order("JZERO");
-//            coder->add_order("LOAD"+r_sfx, right->addr);
-//            coder->add_order("STORE", 2);
-//            coder->add_order("SET", 0);
-//            coder->add_order("STORE", 1);
-//            int pos = coder->get_order_pos();
-//            coder->add_order("LOAD"+l_sfx, left->addr);
-//            coder->add_order("SUB", 2);
-//            coder->add_order("JPOS", coder->get_order_pos()+8);
-//            coder->add_order("LOAD", 2);
-//            coder->add_order("SUB"+l_sfx, left->addr);
-//            coder->add_order("STORE", 2);
-//            coder->add_order("SET", 1);
-//            coder->add_order("ADD", 1);
-//            coder->add_order("STORE", 1);
-//            coder->add_order("JUMP", pos);
-//            coder->add_order("LOAD", 2);
-//            pos = coder->get_order_pos();
-//            coder->set_part_order(ind, pos);
-
-
-//          Nowe, ale czy działające?
             coder->add_order("SET", 0, "div start");
             coder->add_order("STORE", 1);
             coder->add_order("LOAD"+r_sfx, right->addr);

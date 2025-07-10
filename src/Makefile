@@ -1,9 +1,9 @@
 FLAGS = -g -W -pedantic -std=c++17
 .PHONY = all clean cleanall
 
-all: kompilator
+all: compiler
 
-kompilator: lexer.o parser.o main.o logic.o classes.o
+compiler: lexer.o parser.o main.o logic.o classes.o
 	$(CXX) $^ -o $@
 
 %.o: %.cpp
@@ -19,4 +19,4 @@ clean:
 	rm -f *.o parser.cpp parser.hpp lexer.cpp
 
 cleanall: clean
-	rm -f kompilator debugfile.txt *.geba
+	rm -f compiler debugfile.txt *.geba

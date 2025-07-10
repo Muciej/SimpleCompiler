@@ -11,6 +11,7 @@ int main(int argc, char const* argv[]) {
 
     if(argc!=3 && argc!=4){
         cerr << "Poprawne użycie: kompilator plik_wejściowy plik_wyjściowy (opcjonalnie plik debug)"<<endl;
+        cerr << "Correct usage: "<<endl;
         return -1;
     }
 
